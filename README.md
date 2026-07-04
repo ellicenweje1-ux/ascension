@@ -27,8 +27,9 @@ Cloudflare Pages, GitHub Pages).
 index.html                       the full experience (landing / form / confirmation)
 css/style.css                    all styling + animation
 js/app.js                        view transitions, form steps, validation, submit
-assets/wordmark.svg              ASCENSION wordmark (arrow over the I) — vector
-assets/arrow.svg                 the arrow submark — vector
+assets/wordmark.png / arrow.png  master logo files (originals, untouched)
+assets/wordmark-light.png / arrow-light.png  ivory-white versions used by the site
+assets/wordmark.svg / arrow.svg  vector recreations (spares)
 assets/favicon.svg               browser tab mark
 emails/application-received.html Email 1 — application received (dark, branded)
 emails/guest-list-confirmation.html Email 2 — accepted / guest list confirmation
@@ -37,10 +38,13 @@ emails/guest-list-confirmation.html Email 2 — accepted / guest list confirmati
 Both logo SVGs use `currentColor`, so they render white on dark or black on light
 by CSS `color` alone — the artwork itself never changes.
 
-> **Note on the logo files:** the original logo uploads didn't come through as
-> files, so these SVGs are faithful vector recreations (Anton letterforms + the
-> chevron arrow). If you have the master files, drop them into `assets/` with the
-> same names and everything picks them up automatically.
+The site uses the founder's master PNG logos: `assets/wordmark.png` and
+`assets/arrow.png` are the untouched originals; `wordmark-light.png` /
+`arrow-light.png` are the same artwork recoloured ivory-white and trimmed for the
+dark site (colour is the only change). The earlier SVG recreations remain as
+scalable spares. For the email header image, use the live site's copy:
+`https://<your-site>/assets/wordmark-light.png` — but note it's white on
+transparent, so it only shows on the dark email background (that's correct).
 
 ## Wiring the form (2 minutes)
 

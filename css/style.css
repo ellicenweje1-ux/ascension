@@ -133,26 +133,18 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: clamp(52px, 7.5vh, 76px);
   height: auto;
   display: block;
-  color: var(--white);
-  overflow: visible;
+  /* draws itself upward: revealed from the base, then settles */
+  opacity: 0;
+  clip-path: inset(100% 0 0 0);
+  filter: blur(4px);
+  animation: arrow-draw 2.3s var(--ease-out) 0.35s forwards;
 }
-
-/* Draw-on: outline traces first, then the mark fills in */
-.arrow-mark .draw {
-  fill: var(--white);
-  fill-opacity: 0;
-  stroke: var(--white);
-  stroke-width: 6;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation:
-    draw-line 1.7s var(--ease-out) forwards,
-    fill-in 1.1s ease forwards;
+@keyframes arrow-draw {
+  0%   { opacity: 0; clip-path: inset(100% 0 0 0); filter: blur(4px); }
+  30%  { opacity: 1; }
+  70%  { clip-path: inset(0 0 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
 }
-.arrow-mark .draw-1 { animation-delay: 0.35s, 1.7s; }
-.arrow-mark .draw-2 { animation-delay: 0.75s, 1.9s; }
-@keyframes draw-line { to { stroke-dashoffset: 0; } }
-@keyframes fill-in   { to { fill-opacity: 1; } }
 
 /* the arrow keeps breathing once drawn */
 .arrow-button::after {
@@ -231,8 +223,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: clamp(150px, 20vw, 210px);
   height: auto;
   display: block;
-  filter: invert(96%) sepia(4%) saturate(232%) hue-rotate(357deg) brightness(103%);
-  opacity: 0.94;
+  opacity: 0.96;
 }
 
 .register-intro { margin-top: 7vh; max-width: 560px; }
@@ -507,7 +498,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .confirm-arrow {
   width: clamp(46px, 6.5vh, 64px);
   height: auto;
-  color: var(--white);
   opacity: 0;
 }
 .view-confirmation.is-active .confirm-arrow {
@@ -595,7 +585,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition-duration: 0.01ms !important; }
   .grain { animation: none; }
   .reveal, .confirm-copy > *, .confirm-arrow { opacity: 1 !important; transform: none !important; }
-  .arrow-mark .draw { fill-opacity: 1; stroke-dashoffset: 0; }
+  .arrow-mark { opacity: 1 !important; clip-path: none !important; filter: none !important; }
 }
 
 @media (max-width: 560px) {
