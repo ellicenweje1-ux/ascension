@@ -60,6 +60,14 @@ the fields at deploy time). One-time setup on the Netlify project:
 Submissions are stored in the Netlify dashboard (Forms tab) and power the admin
 page below. Free tier: 100 submissions/month.
 
+**Email alerts (free route):** Netlify's built-in email notifications are
+Pro-only, so `netlify/functions/submission-created.js` sends the alert instead —
+Netlify runs it automatically on every submission. Set two more environment
+variables to switch it on: `RESEND_API_KEY` (from a free resend.com account) and
+`NOTIFY_EMAIL` (the address alerts go to — on Resend's free tier without a
+verified domain this must be the email the Resend account was created with).
+Without those variables it silently does nothing; submissions are stored either way.
+
 `instagramCheckUrl` in `js/app.js` stays optional — browsers can't query
 instagram.com directly (CORS), so by default the site validates the handle's
 *format*; point this at a tiny endpoint returning `{ "exists": true|false }`
