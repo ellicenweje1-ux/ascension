@@ -7,9 +7,12 @@
  *
  * Required environment variables (Project configuration → Environment variables):
  *   RESEND_API_KEY — API key from resend.com
- *   NOTIFY_EMAIL   — where application alerts go. On Resend's free tier
- *                    without a verified domain, this must be the email
- *                    address the Resend account was signed up with.
+ *   NOTIFY_EMAIL   — where application alerts go.
+ *   NOTIFY_FROM    — optional sender, e.g. "Ascension <ascension@yourdomain.com>".
+ *                    Use an address on a domain verified in the Resend account —
+ *                    then NOTIFY_EMAIL can be any inbox. Defaults to Resend's
+ *                    onboarding sender, which can only deliver to the Resend
+ *                    account's own email address.
  *
  * If either variable is missing the function does nothing — submissions
  * are still stored in Netlify Forms and visible in /admin.html regardless.
@@ -67,7 +70,7 @@ exports.handler = async (event) => {
       "User-Agent": "Mozilla/5.0 (compatible; AscensionSite/1.0)",
     },
     body: JSON.stringify({
-      from: "Ascension <onboarding@resend.dev>",
+      from: process.env.NOTIFY_FROM || "Ascension <onboarding@resend.dev>",
       to: [to],
       subject: `New Ascension application — ${name}`,
       html,
