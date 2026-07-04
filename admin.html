@@ -6,6 +6,11 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Ascension — Guest List Admin</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="admin.webmanifest">
+<link rel="apple-touch-icon" href="assets/app-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="A· Door">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -72,6 +77,12 @@ td.date { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--whi
 td a { color:var(--white); text-decoration:none; border-bottom:1px solid var(--hairline-strong); }
 td a:hover { border-color:var(--white); }
 .pill { display:inline-block; font-size:10px; letter-spacing:.18em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:3px 9px; }
+.door-btn { font-size:10px; letter-spacing:.2em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:8px 14px; white-space:nowrap; transition:background .3s,color .3s,border-color .3s; }
+.door-btn:hover { border-color:var(--white); }
+.door-btn.in { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
+.door-btn[disabled] { opacity:.5; cursor:wait; }
+td.door { white-space:nowrap; }
+.door-time { display:block; margin-top:5px; font-size:10.5px; color:var(--white-faint); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
 .empty { padding:60px 20px; text-align:center; color:var(--white-faint); font-size:14px; letter-spacing:.08em; }
 .foot { margin-top:16px; font-size:11.5px; color:var(--white-faint); letter-spacing:.05em; }
 @media (max-width:640px){ .wrap{padding:24px 14px 60px;} .stat{min-width:calc(50% - 7px);} }
@@ -110,18 +121,24 @@ td a:hover { border-color:var(--white); }
       <div class="stat"><b id="s-week">–</b><span>Last 7 days</span></div>
       <div class="stat"><b id="s-optin">–</b><span>Opted in to updates</span></div>
       <div class="stat"><b id="s-invited">–</b><span>Invited by someone</span></div>
+      <div class="stat"><b id="s-door">–</b><span>Checked in at door</span></div>
     </div>
 
     <div class="controls">
       <input id="search" type="search" placeholder="Search name, email, Instagram, occupation…">
       <select id="filter-source"><option value="">All sources</option></select>
       <select id="filter-occ"><option value="">All occupations</option></select>
+      <select id="filter-door">
+        <option value="">Everyone</option>
+        <option value="in">Checked in</option>
+        <option value="out">Not arrived</option>
+      </select>
     </div>
 
     <div class="tablewrap">
       <table>
         <thead><tr>
-          <th>Received</th><th>Name</th><th>Email</th><th>Phone</th><th>Instagram</th>
+          <th>Door</th><th>Name</th><th>Received</th><th>Email</th><th>Phone</th><th>Instagram</th>
           <th>Occupation</th><th>Heard from</th><th>Invited by</th><th>Updates</th>
         </tr></thead>
         <tbody id="rows"></tbody>
@@ -129,6 +146,9 @@ td a:hover { border-color:var(--white); }
       <p class="empty" id="empty" hidden>No applications match.</p>
     </div>
     <p class="foot" id="foot"></p>
+    <p class="foot">Door night? Add this page to your phone's home screen for one-tap check-ins —
+      iPhone: Share → Add to Home Screen · Android: menu ⋮ → Add to Home screen. It installs as the
+      <b>A· Door</b> app. The main site installs as an app the same way.</p>
   </section>
 
 </div>
@@ -152,20 +172,31 @@ function fmtDate(iso) {
   return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
 function render() {
   const q = $("search").value.trim().toLowerCase();
   const src = $("filter-source").value;
   const occ = $("filter-occ").value;
+  const door = $("filter-door").value;
   const rows = DATA.filter((r) => {
     if (src && r.heard_from !== src) return false;
     if (occ && r.occupation !== occ) return false;
+    if (door === "in" && !r.checked_in_at) return false;
+    if (door === "out" && r.checked_in_at) return false;
     if (!q) return true;
     return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone]
       .join(" ").toLowerCase().includes(q);
   });
   $("rows").innerHTML = rows.map((r) => `<tr>
-    <td class="date">${esc(fmtDate(r.created_at))}</td>
+    <td class="door">${r.checked_in_at
+      ? `<button class="door-btn in" data-checkin="${esc(r.id)}" data-state="out" title="Tap to undo">✓ In</button><span class="door-time">${esc(fmtTime(r.checked_in_at))}</span>`
+      : `<button class="door-btn" data-checkin="${esc(r.id)}" data-state="in">Check in</button>`}</td>
     <td class="name">${esc(r.first_name)} ${esc(r.surname)}</td>
+    <td class="date">${esc(fmtDate(r.created_at))}</td>
     <td><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
     <td>${esc(r.phone) || "—"}</td>
     <td>${r.instagram ? `<a href="https://instagram.com/${esc(r.instagram)}" target="_blank" rel="noopener">@${esc(r.instagram)}</a>` : "—"}</td>
@@ -185,6 +216,7 @@ function hydrate() {
   $("s-week").textContent = DATA.filter((r) => new Date(r.created_at) > week).length;
   $("s-optin").textContent = DATA.filter((r) => r.updates_optin === "Yes").length;
   $("s-invited").textContent = DATA.filter((r) => (r.invited_by || "").trim()).length;
+  $("s-door").textContent = DATA.filter((r) => r.checked_in_at).length;
   for (const [sel, field] of [["filter-source", "heard_from"], ["filter-occ", "occupation"]]) {
     const el = $(sel);
     const current = el.value;
@@ -214,11 +246,36 @@ $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); $("gate-e
 $("search").addEventListener("input", render);
 $("filter-source").addEventListener("change", render);
 $("filter-occ").addEventListener("change", render);
+$("filter-door").addEventListener("change", render);
+
+$("rows").addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-checkin]");
+  if (!btn) return;
+  const id = btn.dataset.checkin;
+  const goingIn = btn.dataset.state === "in";
+  if (!goingIn && !confirm("Undo this check-in?")) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch("/.netlify/functions/checkin", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
+      body: JSON.stringify({ id, checked_in: goingIn }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
+    const row = DATA.find((r) => r.id === id);
+    if (row) row.checked_in_at = body.checked_in_at || "";
+    hydrate();
+  } catch (err) {
+    btn.disabled = false;
+    alert(err.message);
+  }
+});
 $("refresh-btn").addEventListener("click", () => unlock(sessionStorage.getItem(KEY_STORE) || ""));
 $("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
 
 $("csv-btn").addEventListener("click", () => {
-  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin"];
+  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin","checked_in_at"];
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = "﻿" + [cols.join(","), ...DATA.map((r) => cols.map((c) => cell(r[c])).join(","))].join("\r\n");
   const a = document.createElement("a");

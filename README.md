@@ -1,7 +1,7 @@
 # Ascension — A Night With Ascension
 
 An immersive landing + register-interest experience for **Ascension**, the cultural
-label exploring the intersection of music, fashion, art and community.
+label exploring the intersection of music, art and community.
 
 The whole journey lives in one page (`index.html`) so it flows seamlessly with no
 page reloads:
@@ -88,6 +88,17 @@ the Netlify API token server-side. One-time setup:
 3. **Deploys → Trigger deploy** so the variables take effect.
 
 Then open `https://<your-site>/admin.html` and unlock with the password.
+
+**Door check-ins:** each guest row has a Check in button — tap it on arrival and
+the attendance is logged (stored in Netlify Blobs via
+`netlify/functions/checkin.mjs`, timestamped, undoable, included in the CSV and
+the "Checked in at door" stat). The admin page installs to a phone home screen
+as the **A· Door** app (`admin.webmanifest`); the main site installs as
+**Ascension** (`site.webmanifest`).
+
+**Guest confirmation email:** `submission-created.js` also sends the
+"Application Received | A Night With Ascension" email to the guest
+automatically — this needs `NOTIFY_FROM` on a Resend-verified domain.
 
 ## Emails
 

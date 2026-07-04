@@ -20,7 +20,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background: var(--black);
@@ -121,40 +121,50 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .arrow-button {
   display: block;
+  position: relative;
   padding: 18px 34px;
   border-radius: 2px;
   outline-offset: 10px;
   transition: transform 0.8s var(--ease-out);
 }
+/* soft halo behind the mark */
+.arrow-button::before {
+  content: "";
+  position: absolute;
+  inset: -70% -180%;
+  background: radial-gradient(ellipse at center, rgba(244,241,236,0.13) 0%, transparent 58%);
+  opacity: 0;
+  animation: soft-in 2.6s ease 2s forwards;
+  pointer-events: none;
+}
 .arrow-button:hover { transform: translateY(-6px); }
 .arrow-button:active { transform: translateY(-2px); }
 
 .arrow-mark {
-  width: clamp(52px, 7.5vh, 76px);
+  width: clamp(56px, 8vh, 80px);
   height: auto;
   display: block;
-  /* draws itself upward: revealed from the base, then settles */
+  position: relative;
+  /* draws itself upward slowly, then keeps a living glow */
   opacity: 0;
   clip-path: inset(100% 0 0 0);
-  filter: blur(4px);
-  animation: arrow-draw 2.3s var(--ease-out) 0.35s forwards;
+  filter: blur(5px) drop-shadow(0 0 0 rgba(244,241,236,0));
+  animation:
+    arrow-draw 4s var(--ease-out) 0.4s forwards,
+    arrow-breathe 5.5s ease-in-out 4.6s infinite;
 }
 @keyframes arrow-draw {
-  0%   { opacity: 0; clip-path: inset(100% 0 0 0); filter: blur(4px); }
-  30%  { opacity: 1; }
-  70%  { clip-path: inset(0 0 0 0); }
-  100% { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
+  0%   { opacity: 0; clip-path: inset(100% 0 0 0); filter: blur(5px) drop-shadow(0 0 0 rgba(244,241,236,0)); }
+  22%  { opacity: 1; }
+  /* finish the reveal fully un-clipped before the glow blooms —
+     clip-path + drop-shadow together tint the clip box in Chromium */
+  75%  { clip-path: inset(0 0 0 0); filter: blur(0) drop-shadow(0 0 0 rgba(244,241,236,0)); }
+  76%  { clip-path: none; }
+  100% { opacity: 1; clip-path: none; filter: blur(0) drop-shadow(0 0 22px rgba(244,241,236,0.5)); }
 }
-
-/* the arrow keeps breathing once drawn */
-.arrow-button::after {
-  content: "";
-  display: block;
-  width: 1px; height: 34px;
-  margin: 26px auto 0;
-  background: linear-gradient(to bottom, var(--hairline-strong), transparent);
-  opacity: 0;
-  animation: soft-in 1.2s ease 2.6s forwards;
+@keyframes arrow-breathe {
+  0%, 100% { filter: blur(0) drop-shadow(0 0 14px rgba(244,241,236,0.35)); }
+  50%      { filter: blur(0) drop-shadow(0 0 34px rgba(244,241,236,0.62)); }
 }
 
 .landing-title {
@@ -204,9 +214,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* staged reveals */
 .reveal { opacity: 0; transform: translateY(14px); animation: rise-in 1.4s var(--ease-out) forwards; }
-.reveal-title { animation-delay: 2.7s; }
-.reveal-sub   { animation-delay: 3.5s; }
-.reveal-enter { animation-delay: 4.3s; }
+.reveal-title { animation-delay: 3.6s; }
+.reveal-sub   { animation-delay: 4.4s; }
+.reveal-enter { animation-delay: 5.1s; }
 @keyframes rise-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes soft-in { to { opacity: 1; } }
 
@@ -504,9 +514,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   animation: arrow-ascend 1.9s var(--ease-out) 0.15s forwards;
 }
 @keyframes arrow-ascend {
-  0%   { opacity: 0; transform: translateY(58vh) scale(0.96); }
+  0%   { opacity: 0; transform: translateY(58vh) scale(0.96); filter: drop-shadow(0 0 0 rgba(244,241,236,0)); }
   35%  { opacity: 1; }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(0 0 20px rgba(244,241,236,0.45)); }
 }
 
 .confirm-copy { margin-top: 5.5vh; }
@@ -586,10 +596,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .grain { animation: none; }
   .reveal, .confirm-copy > *, .confirm-arrow { opacity: 1 !important; transform: none !important; }
   .arrow-mark { opacity: 1 !important; clip-path: none !important; filter: none !important; }
+  .arrow-button::before { opacity: 1 !important; }
 }
 
 @media (max-width: 560px) {
-  .landing-title { letter-spacing: 0.22em; text-indent: 0.22em; }
+  .landing-title { font-size: 5.2vw; letter-spacing: 0.16em; text-indent: 0.16em; }
+  .landing-sub { letter-spacing: 0.34em; text-indent: 0.34em; }
   .step-nav { gap: 12px; }
   .btn-ghost, .btn-solid { padding-left: 26px; padding-right: 26px; }
   .modal-panel { padding: 36px 26px; }
