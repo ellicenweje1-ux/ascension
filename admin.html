@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ascension — Guest List Admin</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #060606;
+  --ink: #0e0e0e;
+  --white: #f4f1ec;
+  --white-dim: rgba(244,241,236,0.62);
+  --white-faint: rgba(244,241,236,0.38);
+  --hairline: rgba(244,241,236,0.14);
+  --hairline-strong: rgba(244,241,236,0.32);
+  --sans: "Jost", "Futura", system-ui, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--black); color:var(--white); font-family:var(--sans); font-weight:300; min-height:100svh; -webkit-font-smoothing:antialiased; }
+button { font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+::selection { background:var(--white); color:var(--black); }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
+
+header.top { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:26px; border-bottom:1px solid var(--hairline); }
+.brand { display:flex; align-items:center; gap:16px; }
+.brand img { height:26px; width:auto; display:block; }
+.brand span { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--white-faint); }
+.top-actions { display:flex; gap:10px; }
+
+.btn { padding:11px 22px; border:1px solid var(--hairline-strong); font-size:11px; letter-spacing:0.28em; text-indent:0.28em; text-transform:uppercase; font-weight:400; transition: border-color .3s, background .3s, color .3s; }
+.btn:hover { border-color:var(--white); }
+.btn-solid { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
+.btn-solid:hover { opacity:.88; }
+
+/* password gate */
+.gate { min-height:70svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:26px; }
+.gate img { height:64px; width:auto; }
+.gate h1 { font-weight:200; font-size:20px; letter-spacing:0.32em; text-indent:0.32em; text-transform:uppercase; }
+.gate form { display:flex; flex-direction:column; gap:22px; width:min(320px,90vw); }
+.gate input { background:transparent; border:0; border-bottom:1px solid var(--hairline-strong); color:var(--white); font-family:var(--sans); font-size:16px; letter-spacing:.2em; text-align:center; padding:10px 2px; outline:none; border-radius:0; }
+.gate input:focus { border-color:var(--white); }
+.gate .err { min-height:18px; font-size:12.5px; color:rgba(232,196,188,.9); letter-spacing:.05em; }
+
+/* dashboard */
+.dash { display:none; }
+.dash.on { display:block; }
+.stats { display:flex; flex-wrap:wrap; gap:14px; margin:30px 0 8px; }
+.stat { border:1px solid var(--hairline); padding:18px 26px; min-width:150px; }
+.stat b { display:block; font-size:26px; font-weight:200; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+.stat span { font-size:9.5px; letter-spacing:.32em; text-transform:uppercase; color:var(--white-faint); }
+
+.controls { display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin:26px 0 18px; }
+.controls input, .controls select { background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13.5px; letter-spacing:.04em; padding:11px 14px; outline:none; border-radius:0; }
+.controls input { flex:1; min-width:200px; }
+.controls input:focus, .controls select:focus { border-color:var(--white); }
+.controls select option { background:var(--ink); }
+
+.tablewrap { border:1px solid var(--hairline); overflow-x:auto; }
+table { width:100%; border-collapse:collapse; min-width:980px; }
+th { font-size:9.5px; letter-spacing:.3em; text-transform:uppercase; font-weight:400; color:var(--white-faint); text-align:left; padding:14px 16px; border-bottom:1px solid var(--hairline); white-space:nowrap; }
+td { font-size:13.5px; letter-spacing:.03em; padding:13px 16px; border-bottom:1px solid var(--hairline); color:var(--white-dim); vertical-align:top; }
+tr:last-child td { border-bottom:0; }
+tr:hover td { background:rgba(244,241,236,0.03); }
+td.name { color:var(--white); white-space:nowrap; }
+td.date { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--white-faint); }
+td a { color:var(--white); text-decoration:none; border-bottom:1px solid var(--hairline-strong); }
+td a:hover { border-color:var(--white); }
+.pill { display:inline-block; font-size:10px; letter-spacing:.18em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:3px 9px; }
+.empty { padding:60px 20px; text-align:center; color:var(--white-faint); font-size:14px; letter-spacing:.08em; }
+.foot { margin-top:16px; font-size:11.5px; color:var(--white-faint); letter-spacing:.05em; }
+@media (max-width:640px){ .wrap{padding:24px 14px 60px;} .stat{min-width:calc(50% - 7px);} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <img src="assets/wordmark-light.png" alt="Ascension">
+      <span>Guest list admin</span>
+    </div>
+    <div class="top-actions" id="top-actions" hidden>
+      <button class="btn" id="refresh-btn">Refresh</button>
+      <button class="btn" id="csv-btn">Download CSV</button>
+      <button class="btn" id="lock-btn">Lock</button>
+    </div>
+  </header>
+
+  <!-- password gate -->
+  <section class="gate" id="gate">
+    <img src="assets/arrow-light.png" alt="">
+    <h1>Admin Access</h1>
+    <form id="gate-form">
+      <input id="gate-pass" type="password" placeholder="Password" autocomplete="current-password" required>
+      <p class="err" id="gate-err"></p>
+      <button class="btn btn-solid" type="submit">Unlock</button>
+    </form>
+  </section>
+
+  <!-- dashboard -->
+  <section class="dash" id="dash">
+    <div class="stats">
+      <div class="stat"><b id="s-total">–</b><span>Applications</span></div>
+      <div class="stat"><b id="s-week">–</b><span>Last 7 days</span></div>
+      <div class="stat"><b id="s-optin">–</b><span>Opted in to updates</span></div>
+      <div class="stat"><b id="s-invited">–</b><span>Invited by someone</span></div>
+    </div>
+
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search name, email, Instagram, occupation…">
+      <select id="filter-source"><option value="">All sources</option></select>
+      <select id="filter-occ"><option value="">All occupations</option></select>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>Received</th><th>Name</th><th>Email</th><th>Phone</th><th>Instagram</th>
+          <th>Occupation</th><th>Heard from</th><th>Invited by</th><th>Updates</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="empty" id="empty" hidden>No applications match.</p>
+    </div>
+    <p class="foot" id="foot"></p>
+  </section>
+
+</div>
+
+<script>
+const KEY_STORE = "ascension_admin_key";
+let DATA = [];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+async function load(key) {
+  const res = await fetch("/.netlify/functions/applications", { headers: { "x-admin-key": key } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
+  return body.submissions || [];
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function render() {
+  const q = $("search").value.trim().toLowerCase();
+  const src = $("filter-source").value;
+  const occ = $("filter-occ").value;
+  const rows = DATA.filter((r) => {
+    if (src && r.heard_from !== src) return false;
+    if (occ && r.occupation !== occ) return false;
+    if (!q) return true;
+    return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone]
+      .join(" ").toLowerCase().includes(q);
+  });
+  $("rows").innerHTML = rows.map((r) => `<tr>
+    <td class="date">${esc(fmtDate(r.created_at))}</td>
+    <td class="name">${esc(r.first_name)} ${esc(r.surname)}</td>
+    <td><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
+    <td>${esc(r.phone) || "—"}</td>
+    <td>${r.instagram ? `<a href="https://instagram.com/${esc(r.instagram)}" target="_blank" rel="noopener">@${esc(r.instagram)}</a>` : "—"}</td>
+    <td>${esc(r.occupation) || "—"}</td>
+    <td>${esc(r.heard_from) || "—"}</td>
+    <td>${esc(r.invited_by) || "—"}</td>
+    <td>${r.updates_optin === "Yes" ? '<span class="pill">Yes</span>' : "—"}</td>
+  </tr>`).join("");
+  $("empty").hidden = rows.length > 0;
+  $("foot").textContent = `Showing ${rows.length} of ${DATA.length} application${DATA.length === 1 ? "" : "s"}.`;
+}
+
+function hydrate() {
+  DATA.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const week = Date.now() - 7 * 864e5;
+  $("s-total").textContent = DATA.length;
+  $("s-week").textContent = DATA.filter((r) => new Date(r.created_at) > week).length;
+  $("s-optin").textContent = DATA.filter((r) => r.updates_optin === "Yes").length;
+  $("s-invited").textContent = DATA.filter((r) => (r.invited_by || "").trim()).length;
+  for (const [sel, field] of [["filter-source", "heard_from"], ["filter-occ", "occupation"]]) {
+    const el = $(sel);
+    const current = el.value;
+    const vals = [...new Set(DATA.map((r) => r[field]).filter(Boolean))].sort();
+    el.length = 1;
+    for (const v of vals) el.add(new Option(v, v));
+    el.value = current;
+  }
+  render();
+}
+
+async function unlock(key, { silent } = {}) {
+  try {
+    DATA = await load(key);
+    sessionStorage.setItem(KEY_STORE, key);
+    $("gate").style.display = "none";
+    $("dash").classList.add("on");
+    $("top-actions").hidden = false;
+    hydrate();
+  } catch (err) {
+    sessionStorage.removeItem(KEY_STORE);
+    if (!silent) $("gate-err").textContent = err.message;
+  }
+}
+
+$("gate-form").addEventListener("submit", (e) => { e.preventDefault(); $("gate-err").textContent = ""; unlock($("gate-pass").value); });
+$("search").addEventListener("input", render);
+$("filter-source").addEventListener("change", render);
+$("filter-occ").addEventListener("change", render);
+$("refresh-btn").addEventListener("click", () => unlock(sessionStorage.getItem(KEY_STORE) || ""));
+$("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
+
+$("csv-btn").addEventListener("click", () => {
+  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin"];
+  const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const csv = "﻿" + [cols.join(","), ...DATA.map((r) => cols.map((c) => cell(r[c])).join(","))].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = "ascension-applications.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+const saved = sessionStorage.getItem(KEY_STORE);
+if (saved) unlock(saved, { silent: true });
+</script>
+</body>
+</html>

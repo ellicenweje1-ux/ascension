@@ -3,10 +3,10 @@
    ================================================================ */
 
 const CONFIG = {
-  // POST target for applications. Leave empty to run in preview mode
-  // (the form completes locally). Wire to Formspree, a serverless
-  // function or your own API — the payload is a flat JSON object.
-  endpoint: "https://formspree.io/f/xbdvqaoq",
+  // Applications post to Netlify Forms (the hidden form in index.html
+  // registers the fields). Submissions appear in the Netlify dashboard,
+  // trigger email notifications, and feed /admin.html.
+  useNetlifyForms: true,
   // Optional server-side Instagram existence check. Should accept
   // ?username=<name> and return JSON { exists: true|false }.
   // Browsers cannot query instagram.com directly (CORS), so without
@@ -180,7 +180,8 @@ form.addEventListener("submit", async (e) => {
   btn.firstElementChild.textContent = "One moment…";
 
   const payload = {
-    _subject: "New Ascension application",
+    "form-name": "ascension-applications",
+    company: "", // honeypot — stays empty for humans
     first_name: form.first_name.value.trim(),
     surname: form.surname.value.trim(),
     email: form.email.value.trim(),
@@ -189,21 +190,19 @@ form.addEventListener("submit", async (e) => {
     occupation: form.occupation.value,
     heard_from: form.heard_from.value,
     invited_by: form.invited_by.value.trim(),
-    updates_optin: form.updates_optin.checked,
-    privacy_read: form.privacy_read.checked,
-    submitted_at: new Date().toISOString(),
+    updates_optin: form.updates_optin.checked ? "Yes" : "No",
   };
 
   try {
-    if (CONFIG.endpoint) {
-      const res = await fetch(CONFIG.endpoint, {
+    if (CONFIG.useNetlifyForms) {
+      const res = await fetch("/", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(payload).toString(),
       });
       if (!res.ok) throw new Error(`Submission failed (${res.status})`);
     } else {
-      // Preview mode — no endpoint configured yet.
+      // Preview mode.
       await new Promise((r) => setTimeout(r, 900));
       console.info("[Ascension] Preview submission:", payload);
     }

@@ -27,6 +27,8 @@ Cloudflare Pages, GitHub Pages).
 index.html                       the full experience (landing / form / confirmation)
 css/style.css                    all styling + animation
 js/app.js                        view transitions, form steps, validation, submit
+admin.html                       password-gated guest-list dashboard
+netlify/functions/applications.js serverless API feeding the admin page
 assets/wordmark.png / arrow.png  master logo files (originals, untouched)
 assets/wordmark-light.png / arrow-light.png  ivory-white versions used by the site
 assets/wordmark.svg / arrow.svg  vector recreations (spares)
@@ -46,21 +48,38 @@ scalable spares. For the email header image, use the live site's copy:
 `https://<your-site>/assets/wordmark-light.png` — but note it's white on
 transparent, so it only shows on the dark email background (that's correct).
 
-## Wiring the form (2 minutes)
+## How applications flow (Netlify Forms)
 
-Open `js/app.js` — the `CONFIG` block at the top:
+The form posts to **Netlify Forms** (the hidden form in `index.html` registers
+the fields at deploy time). One-time setup on the Netlify project:
 
-- `endpoint` — where applications POST as JSON
-  (`first_name, surname, email, phone, instagram, occupation, heard_from,
-  invited_by, updates_optin, privacy_read, submitted_at`).
-  A [Formspree](https://formspree.io) form URL works out of the box, as does any
-  serverless function or API. **While empty, the site runs in preview mode** — the
-  form completes locally and logs the payload to the console.
-- `instagramCheckUrl` — optional. Browsers can't query instagram.com directly
-  (CORS), so by default the site validates the handle's *format* and shows
-  "✓ Instagram found". For a true existence check, point this at a tiny server
-  endpoint that fetches `https://www.instagram.com/<username>/` and returns
-  `{ "exists": true|false }` — the front-end already handles both answers.
+1. **Project configuration → Forms → Enable form detection**, then redeploy.
+2. **Forms → Form notifications → Add notification → Email** — enter any inbox;
+   every application emails there. Change it any time, no code involved.
+
+Submissions are stored in the Netlify dashboard (Forms tab) and power the admin
+page below. Free tier: 100 submissions/month.
+
+`instagramCheckUrl` in `js/app.js` stays optional — browsers can't query
+instagram.com directly (CORS), so by default the site validates the handle's
+*format*; point this at a tiny endpoint returning `{ "exists": true|false }`
+for a true existence check.
+
+## Admin dashboard (`/admin.html`)
+
+A password-gated guest-list view: stats (total / last 7 days / opted-in /
+invited-by), search, source & occupation filters, Instagram links, CSV export.
+It reads submissions through `netlify/functions/applications.js`, which keeps
+the Netlify API token server-side. One-time setup:
+
+1. Netlify → avatar (top right) → **User settings → Applications →
+   Personal access tokens → New access token** → copy it.
+2. On the project: **Project configuration → Environment variables** → add
+   `ADMIN_PASSWORD` (your choice of password) and `NETLIFY_ACCESS_TOKEN`
+   (the token from step 1).
+3. **Deploys → Trigger deploy** so the variables take effect.
+
+Then open `https://<your-site>/admin.html` and unlock with the password.
 
 ## Emails
 
