@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ascension — A Night With Ascension</title>
+<meta name="description" content="Ascension is a cultural label exploring the intersection of music, fashion, art and community. Register your interest for A Night With Ascension.">
+<meta property="og:title" content="A Night With Ascension">
+<meta property="og:description" content="Music • Discovery • Culture. Applications are reviewed individually.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#060606">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Atmosphere: drifting light + film grain, present on every view -->
+  <div class="atmosphere" aria-hidden="true">
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- ============================ VIEW: LANDING ============================ -->
+  <main id="view-landing" class="view view-landing is-active" aria-label="Welcome">
+    <div class="landing-stage" id="parallax-stage">
+      <button id="enter-arrow" class="arrow-button" type="button" aria-label="Enter Ascension">
+        <svg class="arrow-mark" viewBox="-30 -30 350 964" aria-hidden="true">
+          <path class="draw draw-1" pathLength="1" d="M0,121.8 L145,0 L290,121.8 L290,213.8 L145,92 L0,213.8 Z"/>
+          <path class="draw draw-2" pathLength="1" d="M95,263.8 H195 V903.8 H95 Z"/>
+        </svg>
+      </button>
+
+      <h1 class="landing-title reveal reveal-title">A&nbsp;Night&nbsp;With&nbsp;Ascension</h1>
+      <p class="landing-sub reveal reveal-sub">Music&ensp;•&ensp;Discovery&ensp;•&ensp;Culture</p>
+
+      <button id="enter-btn" class="enter-btn reveal reveal-enter" type="button">
+        <span>Enter</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ============================ VIEW: REGISTER ============================ -->
+  <main id="view-register" class="view view-register" aria-label="Register your interest" hidden>
+    <header class="register-brand">
+      <img src="assets/wordmark.svg" class="wordmark" alt="Ascension">
+    </header>
+
+    <section class="register-intro">
+      <h2 class="register-title">Register Your Interest</h2>
+      <p class="register-lede">Applications are reviewed individually. Guests will receive further information closer to the event.</p>
+    </section>
+
+    <form id="register-form" class="register-form" novalidate>
+      <!-- progress -->
+      <div class="steps-progress" role="tablist" aria-label="Form progress">
+        <span class="step-dot is-current" data-step-dot="1"></span>
+        <span class="step-dot" data-step-dot="2"></span>
+        <span class="step-dot" data-step-dot="3"></span>
+        <span class="step-dot" data-step-dot="4"></span>
+      </div>
+
+      <!-- SECTION 1 — You -->
+      <fieldset class="form-step is-current" data-step="1">
+        <p class="step-label">01&ensp;—&ensp;Introduce yourself</p>
+        <div class="field">
+          <input id="f-first" name="first_name" type="text" autocomplete="given-name" placeholder=" " required>
+          <label for="f-first">First Name</label>
+        </div>
+        <div class="field">
+          <input id="f-last" name="surname" type="text" autocomplete="family-name" placeholder=" " required>
+          <label for="f-last">Surname</label>
+        </div>
+        <div class="field">
+          <input id="f-email" name="email" type="email" autocomplete="email" placeholder=" " required>
+          <label for="f-email">Email</label>
+        </div>
+        <div class="field">
+          <input id="f-phone" name="phone" type="tel" autocomplete="tel" placeholder=" ">
+          <label for="f-phone">Phone Number <span class="opt">(optional)</span></label>
+        </div>
+        <p class="field-error" data-error-for="1" role="alert"></p>
+        <div class="step-nav">
+          <span></span>
+          <button type="button" class="btn-ghost btn-next" data-next="2">Continue</button>
+        </div>
+      </fieldset>
+
+      <!-- SECTION 2 — Instagram -->
+      <fieldset class="form-step" data-step="2" hidden>
+        <p class="step-label">02&ensp;—&ensp;Where we can find you</p>
+        <div class="field field-ig">
+          <span class="ig-at" aria-hidden="true">@</span>
+          <input id="f-instagram" name="instagram" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder=" " required aria-describedby="ig-status">
+          <label for="f-instagram">Instagram Username</label>
+        </div>
+        <p id="ig-status" class="ig-status" aria-live="polite"></p>
+        <p class="field-error" data-error-for="2" role="alert"></p>
+        <div class="step-nav">
+          <button type="button" class="btn-ghost btn-back" data-back="1">Back</button>
+          <button type="button" class="btn-ghost btn-next" data-next="3">Continue</button>
+        </div>
+      </fieldset>
+
+      <!-- SECTION 3 — Occupation -->
+      <fieldset class="form-step" data-step="3" hidden>
+        <p class="step-label">03&ensp;—&ensp;Your world</p>
+        <div class="field field-select">
+          <select id="f-occupation" name="occupation" required>
+            <option value="" disabled selected hidden></option>
+            <option>Creative</option>
+            <option>Fashion</option>
+            <option>Music</option>
+            <option>Hospitality</option>
+            <option>Business</option>
+            <option>Entrepreneur</option>
+            <option>Media</option>
+            <option>Other</option>
+          </select>
+          <label for="f-occupation">Occupation</label>
+          <span class="select-caret" aria-hidden="true"></span>
+        </div>
+        <p class="field-error" data-error-for="3" role="alert"></p>
+        <div class="step-nav">
+          <button type="button" class="btn-ghost btn-back" data-back="2">Back</button>
+          <button type="button" class="btn-ghost btn-next" data-next="4">Continue</button>
+        </div>
+      </fieldset>
+
+      <!-- SECTION 4 — Discovery + consent -->
+      <fieldset class="form-step" data-step="4" hidden>
+        <p class="step-label">04&ensp;—&ensp;How you found us</p>
+        <div class="field field-select">
+          <select id="f-source" name="heard_from" required>
+            <option value="" disabled selected hidden></option>
+            <option>Instagram</option>
+            <option>Friend</option>
+            <option>Mandrake</option>
+            <option>Previous Guest</option>
+            <option>DJ</option>
+            <option>Other</option>
+          </select>
+          <label for="f-source">How did you hear about Ascension?</label>
+          <span class="select-caret" aria-hidden="true"></span>
+        </div>
+        <div class="field">
+          <input id="f-invited" name="invited_by" type="text" autocomplete="off" placeholder=" ">
+          <label for="f-invited">Who invited you? <span class="opt">(optional)</span></label>
+        </div>
+
+        <div class="consents">
+          <label class="check">
+            <input id="f-updates" name="updates_optin" type="checkbox">
+            <span class="check-box" aria-hidden="true"></span>
+            <span class="check-text">I agree to receive updates regarding Ascension.</span>
+          </label>
+          <label class="check">
+            <input id="f-privacy" name="privacy_read" type="checkbox" required>
+            <span class="check-box" aria-hidden="true"></span>
+            <span class="check-text">I have read the <button type="button" class="link-quiet" id="open-privacy">Privacy&nbsp;Policy</button>.</span>
+          </label>
+        </div>
+
+        <p class="field-error" data-error-for="4" role="alert"></p>
+        <div class="step-nav">
+          <button type="button" class="btn-ghost btn-back" data-back="3">Back</button>
+          <button type="submit" class="btn-solid" id="submit-btn"><span>Register Interest</span></button>
+        </div>
+      </fieldset>
+    </form>
+
+    <footer class="register-footer">
+      <p class="brand-statement">Ascension is a cultural label exploring the intersection of music, fashion, art and community.</p>
+      <p class="principles">Discover&ensp;·&ensp;Connect&ensp;·&ensp;Create</p>
+    </footer>
+  </main>
+
+  <!-- ========================== VIEW: CONFIRMATION ========================= -->
+  <main id="view-confirmation" class="view view-confirmation" aria-label="Application received" hidden>
+    <div class="confirm-stage">
+      <svg class="confirm-arrow" viewBox="-30 -30 350 964" aria-hidden="true">
+        <path fill="currentColor" d="M0,121.8 L145,0 L290,121.8 L290,213.8 L145,92 L0,213.8 Z"/>
+        <path fill="currentColor" d="M95,263.8 H195 V903.8 H95 Z"/>
+      </svg>
+      <div class="confirm-copy">
+        <h2 class="confirm-title">Thank&nbsp;You.</h2>
+        <p>Your application has been received.</p>
+        <p>Applications are reviewed individually.</p>
+        <p>Guests will receive further information shortly.</p>
+        <p class="confirm-close">We look forward to welcoming you into the Ascension&nbsp;experience.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================ PRIVACY MODAL ============================ -->
+  <div id="privacy-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="privacy-title">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel" role="document">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      <h3 id="privacy-title">Privacy Policy</h3>
+      <div class="modal-body">
+        <p>Ascension collects the details you submit on this page — your name, email address, phone number, Instagram username, occupation and how you heard about us — solely to review your application and, where you have opted in, to share updates from Ascension.</p>
+        <p>Your information is never sold or shared with third parties beyond the services we use to operate the guest list. You may request access to, or deletion of, your data at any time by contacting us.</p>
+        <p>Professional photography and videography take place at Ascension events; imagery may be used across Ascension's marketing channels. Concerns can be raised with a member of staff on arrival.</p>
+        <p class="modal-fine">This is a summary. For questions, contact the Ascension team via Instagram or email.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

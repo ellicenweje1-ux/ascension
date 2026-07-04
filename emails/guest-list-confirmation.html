@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Welcome to Ascension.</title>
+<!--
+  ASCENSION — Email 2: Accepted / Guest List Confirmation
+  Subject: Welcome to Ascension.
+  Placeholders:
+    {{first_name}} {{assets_url}}
+    {{event_name}} {{event_date}} {{venue_name}} {{venue_address}}
+    {{arrival_time}} {{doors_open}} {{last_entry}}
+    {{qr_code_url}} (hosted QR image for check-in)
+    {{maps_url}} {{calendar_apple_url}} {{calendar_google_url}} {{calendar_outlook_url}}
+    {{spotify_url}} {{pinterest_url}} {{weather_line}} (e.g. "Saturday looks clear — 18°C by evening.")
+-->
+</head>
+<body style="margin:0;padding:0;background-color:#060606;">
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Congratulations — your place on the guest list is confirmed.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#060606;">
+<tr><td align="center" style="padding:56px 20px 64px;">
+
+  <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+    <!-- Wordmark -->
+    <tr><td align="center" style="padding:8px 0 44px;">
+      <img src="{{assets_url}}/wordmark-light.png" width="220" alt="ASCENSION" style="display:block;width:220px;max-width:70%;height:auto;border:0;">
+    </td></tr>
+
+    <tr><td style="border-top:1px solid rgba(244,241,236,0.14);font-size:0;line-height:0;">&nbsp;</td></tr>
+
+    <!-- Opening -->
+    <tr><td align="center" style="padding:44px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 26px;font-size:20px;letter-spacing:0.34em;text-transform:uppercase;color:#f4f1ec;">Congratulations</p>
+      <p style="margin:0;font-size:15px;line-height:1.9;letter-spacing:0.02em;color:rgba(244,241,236,0.72);">Hi {{first_name}} — we are pleased to confirm your place on the guest list for <span style="color:#f4f1ec;">A&nbsp;Night&nbsp;With&nbsp;Ascension</span>.</p>
+    </td></tr>
+
+    <!-- Event details -->
+    <tr><td style="padding:40px 0 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(244,241,236,0.16);">
+      <tr><td style="padding:34px 34px 28px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 20px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);">The details</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:9px 0;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(244,241,236,0.42);width:130px;vertical-align:top;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Event</td>
+            <td style="padding:9px 0;font-size:14px;letter-spacing:0.04em;color:#f4f1ec;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">{{event_name}}</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 0;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(244,241,236,0.42);vertical-align:top;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Date</td>
+            <td style="padding:9px 0;font-size:14px;letter-spacing:0.04em;color:#f4f1ec;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">{{event_date}}</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 0;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(244,241,236,0.42);vertical-align:top;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Venue</td>
+            <td style="padding:9px 0;font-size:14px;letter-spacing:0.04em;color:#f4f1ec;line-height:1.6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">{{venue_name}}<br><span style="color:rgba(244,241,236,0.55);font-size:13px;">{{venue_address}}</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 0;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(244,241,236,0.42);vertical-align:top;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Arrival</td>
+            <td style="padding:9px 0;font-size:14px;letter-spacing:0.04em;color:#f4f1ec;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">{{arrival_time}}</td>
+          </tr>
+        </table>
+      </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- QR check-in -->
+    <tr><td align="center" style="padding:40px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 16px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);">Your entry</p>
+      <img src="{{qr_code_url}}" width="150" height="150" alt="Your check-in QR code" style="display:inline-block;width:150px;height:150px;border:8px solid #f4f1ec;background:#ffffff;">
+      <p style="margin:16px 0 0;font-size:12px;letter-spacing:0.06em;color:rgba(244,241,236,0.5);">Present this code on arrival for fast guest-list check-in.</p>
+    </td></tr>
+
+    <!-- Buttons: maps + calendar -->
+    <tr><td align="center" style="padding:36px 0 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding:6px;"><a href="{{maps_url}}" style="display:inline-block;padding:12px 26px;border:1px solid rgba(244,241,236,0.4);color:#f4f1ec;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.26em;text-transform:uppercase;text-decoration:none;">Open in Maps</a></td>
+        <td style="padding:6px;"><a href="{{spotify_url}}" style="display:inline-block;padding:12px 26px;border:1px solid rgba(244,241,236,0.4);color:#f4f1ec;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.26em;text-transform:uppercase;text-decoration:none;">The Soundtrack</a></td>
+      </tr>
+      </table>
+      <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding:6px;"><a href="{{calendar_apple_url}}" style="display:inline-block;padding:11px 20px;color:rgba(244,241,236,0.6);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(244,241,236,0.25);">+ Apple</a></td>
+        <td style="padding:6px;"><a href="{{calendar_google_url}}" style="display:inline-block;padding:11px 20px;color:rgba(244,241,236,0.6);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(244,241,236,0.25);">+ Google</a></td>
+        <td style="padding:6px;"><a href="{{calendar_outlook_url}}" style="display:inline-block;padding:11px 20px;color:rgba(244,241,236,0.6);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(244,241,236,0.25);">+ Outlook</a></td>
+      </tr>
+      </table>
+    </td></tr>
+
+    <!-- Dress code -->
+    <tr><td style="padding:48px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 18px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);text-align:center;">Dress code</p>
+      <p style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:19px;text-align:center;color:#f4f1ec;">Contemporary Elegance</p>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.9;letter-spacing:0.02em;text-align:center;color:rgba(244,241,236,0.72);">Elevated eveningwear. Luxury streetwear welcomed when thoughtfully styled.</p>
+      <p style="margin:0;font-size:12px;line-height:2;letter-spacing:0.08em;text-transform:uppercase;text-align:center;color:rgba(244,241,236,0.45);">No sportswear&nbsp;&nbsp;&bull;&nbsp;&nbsp;No caps&nbsp;&nbsp;&bull;&nbsp;&nbsp;No offensive branding</p>
+      <p style="margin:22px 0 0;text-align:center;"><a href="{{pinterest_url}}" style="color:rgba(244,241,236,0.6);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(244,241,236,0.25);padding-bottom:2px;">Dress inspiration →</a></p>
+    </td></tr>
+
+    <!-- Arrival -->
+    <tr><td style="padding:44px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 16px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);text-align:center;">Arrival</p>
+      <p style="margin:0;font-size:14px;line-height:2;letter-spacing:0.03em;text-align:center;color:rgba(244,241,236,0.72);">Doors open {{doors_open}}&nbsp;&nbsp;&bull;&nbsp;&nbsp;Last entry {{last_entry}}<br>Please arrive on time.</p>
+      <p style="margin:18px 0 0;font-size:12.5px;line-height:1.9;letter-spacing:0.03em;text-align:center;color:rgba(244,241,236,0.45);">{{weather_line}}</p>
+    </td></tr>
+
+    <!-- Photography -->
+    <tr><td style="padding:44px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 16px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);text-align:center;">Photography</p>
+      <p style="margin:0;font-size:13px;line-height:1.9;letter-spacing:0.02em;text-align:center;color:rgba(244,241,236,0.6);">Professional photography and videography will take place throughout the evening. By attending you acknowledge that imagery may be used across Ascension's marketing channels. If you have concerns, please notify a member of staff upon arrival.</p>
+    </td></tr>
+
+    <!-- Respect -->
+    <tr><td style="padding:44px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 16px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);text-align:center;">The atmosphere</p>
+      <p style="margin:0;font-size:13px;line-height:1.9;letter-spacing:0.02em;text-align:center;color:rgba(244,241,236,0.6);">Ascension exists to celebrate music, creativity and community. We ask every guest to contribute positively to the atmosphere and respect both the venue and fellow attendees.</p>
+    </td></tr>
+
+    <!-- Fine print -->
+    <tr><td style="padding:40px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0;font-size:11px;line-height:2.1;letter-spacing:0.05em;text-align:center;color:rgba(244,241,236,0.35);">No excessive intoxication&nbsp;&nbsp;&bull;&nbsp;&nbsp;Management reserve the right to refuse entry<br>Invitation is non-transferable&nbsp;&nbsp;&bull;&nbsp;&nbsp;Government ID may be requested</p>
+    </td></tr>
+
+    <!-- Signature -->
+    <tr><td align="center" style="padding:52px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0 0 10px;font-size:14px;letter-spacing:0.5em;text-transform:uppercase;color:#f4f1ec;">Ascension</p>
+      <p style="margin:0;font-size:10px;letter-spacing:0.34em;text-transform:uppercase;line-height:2.2;color:rgba(244,241,236,0.45);">Music&nbsp;&nbsp;&bull;&nbsp;&nbsp;Discovery&nbsp;&nbsp;&bull;&nbsp;&nbsp;Culture</p>
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td align="center" style="padding:48px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <p style="margin:0;font-size:11px;line-height:1.8;letter-spacing:0.04em;color:rgba(244,241,236,0.32);">This email was sent because you registered your interest for an Ascension event.</p>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</body>
+</html>
