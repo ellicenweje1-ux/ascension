@@ -83,6 +83,29 @@ td a:hover { border-color:var(--white); }
 .door-btn[disabled] { opacity:.5; cursor:wait; }
 td.door { white-space:nowrap; }
 .door-time { display:block; margin-top:5px; font-size:10.5px; color:var(--white-faint); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+td.review { white-space:nowrap; }
+.rev-btn { font-size:10px; letter-spacing:.18em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:7px 12px; margin-right:6px; transition:background .3s,color .3s,border-color .3s; }
+.rev-btn:hover { border-color:var(--white); }
+.rev-btn[disabled] { opacity:.5; cursor:wait; }
+.pill-ok { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
+.pill-no { color:var(--white-faint); }
+.rev-undo { display:block; margin-top:6px; font-size:10px; letter-spacing:.12em; color:var(--white-faint); text-transform:uppercase; }
+.rev-undo:hover { color:var(--white); }
+tr.hl td { background:rgba(244,241,236,0.08); }
+
+/* event settings card */
+.event-card { border:1px solid var(--hairline); margin:26px 0 0; }
+.event-head { width:100%; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; text-align:left; }
+.event-head span { font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--white-faint); }
+.event-head b { font-weight:300; font-size:12px; color:var(--white-dim); letter-spacing:.06em; }
+.event-body { padding:6px 20px 22px; display:none; }
+.event-card.open .event-body { display:block; }
+.event-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+.event-grid label { display:block; font-size:9px; letter-spacing:.26em; text-transform:uppercase; color:var(--white-faint); margin-bottom:6px; }
+.event-grid input { width:100%; background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13.5px; letter-spacing:.03em; padding:10px 12px; outline:none; border-radius:0; }
+.event-grid input:focus { border-color:var(--white); }
+.event-actions { margin-top:16px; display:flex; align-items:center; gap:14px; }
+.event-note { font-size:11.5px; color:var(--white-faint); letter-spacing:.04em; }
 .empty { padding:60px 20px; text-align:center; color:var(--white-faint); font-size:14px; letter-spacing:.08em; }
 .foot { margin-top:16px; font-size:11.5px; color:var(--white-faint); letter-spacing:.05em; }
 @media (max-width:640px){ .wrap{padding:24px 14px 60px;} .stat{min-width:calc(50% - 7px);} }
@@ -121,13 +144,45 @@ td.door { white-space:nowrap; }
       <div class="stat"><b id="s-week">–</b><span>Last 7 days</span></div>
       <div class="stat"><b id="s-optin">–</b><span>Opted in to updates</span></div>
       <div class="stat"><b id="s-invited">–</b><span>Invited by someone</span></div>
+      <div class="stat"><b id="s-accepted">–</b><span>Accepted</span></div>
       <div class="stat"><b id="s-door">–</b><span>Checked in at door</span></div>
+    </div>
+
+    <div class="event-card" id="event-card">
+      <button type="button" class="event-head" id="event-toggle">
+        <span>Event details — used in the acceptance email</span>
+        <b id="event-summary">…</b>
+      </button>
+      <div class="event-body">
+        <div class="event-grid">
+          <div><label>Event name</label><input id="ev-event_name" placeholder="A Night With Ascension"></div>
+          <div><label>Date (as written to guests)</label><input id="ev-date_text" placeholder="Friday 31st July"></div>
+          <div><label>Date (for calendars, YYYY-MM-DD)</label><input id="ev-date_iso" placeholder="2026-07-31"></div>
+          <div><label>Doors open (HH:MM)</label><input id="ev-doors_open" placeholder="19:00"></div>
+          <div><label>Last entry (HH:MM)</label><input id="ev-last_entry" placeholder="21:00"></div>
+          <div><label>Event ends (HH:MM, optional)</label><input id="ev-end_time" placeholder="23:30"></div>
+          <div><label>Venue name</label><input id="ev-venue_name" placeholder="The Mandrake Hotel"></div>
+          <div><label>Venue address</label><input id="ev-venue_address" placeholder="20-21 Newman St, London W1T 1PG"></div>
+          <div><label>Google Maps link (optional)</label><input id="ev-maps_url" placeholder="https://maps.app.goo.gl/…"></div>
+          <div><label>Spotify playlist link (optional)</label><input id="ev-spotify_url" placeholder="https://open.spotify.com/…"></div>
+        </div>
+        <div class="event-actions">
+          <button type="button" class="btn btn-solid" id="event-save">Save details</button>
+          <span class="event-note" id="event-note">Fill these in before accepting guests — they appear in the invite email.</span>
+        </div>
+      </div>
     </div>
 
     <div class="controls">
       <input id="search" type="search" placeholder="Search name, email, Instagram, occupation…">
       <select id="filter-source"><option value="">All sources</option></select>
       <select id="filter-occ"><option value="">All occupations</option></select>
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option value="pending">Pending review</option>
+        <option value="accepted">Accepted</option>
+        <option value="declined">Declined</option>
+      </select>
       <select id="filter-door">
         <option value="">Everyone</option>
         <option value="in">Checked in</option>
@@ -138,7 +193,7 @@ td.door { white-space:nowrap; }
     <div class="tablewrap">
       <table>
         <thead><tr>
-          <th>Door</th><th>Name</th><th>Received</th><th>Email</th><th>Phone</th><th>Instagram</th>
+          <th>Door</th><th>Name</th><th>Review</th><th>Received</th><th>Email</th><th>Phone</th><th>Instagram</th>
           <th>Occupation</th><th>Heard from</th><th>Invited by</th><th>Updates</th>
         </tr></thead>
         <tbody id="rows"></tbody>
@@ -182,11 +237,13 @@ function render() {
   const src = $("filter-source").value;
   const occ = $("filter-occ").value;
   const door = $("filter-door").value;
+  const st = $("filter-status").value;
   const rows = DATA.filter((r) => {
     if (src && r.heard_from !== src) return false;
     if (occ && r.occupation !== occ) return false;
     if (door === "in" && !r.checked_in_at) return false;
     if (door === "out" && r.checked_in_at) return false;
+    if (st && (r.status || "pending") !== st) return false;
     if (!q) return true;
     return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone]
       .join(" ").toLowerCase().includes(q);
@@ -196,6 +253,7 @@ function render() {
       ? `<button class="door-btn in" data-checkin="${esc(r.id)}" data-state="out" title="Tap to undo">✓ In</button><span class="door-time">${esc(fmtTime(r.checked_in_at))}</span>`
       : `<button class="door-btn" data-checkin="${esc(r.id)}" data-state="in">Check in</button>`}</td>
     <td class="name">${esc(r.first_name)} ${esc(r.surname)}</td>
+    <td class="review">${reviewCell(r)}</td>
     <td class="date">${esc(fmtDate(r.created_at))}</td>
     <td><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
     <td>${esc(r.phone) || "—"}</td>
@@ -217,6 +275,7 @@ function hydrate() {
   $("s-optin").textContent = DATA.filter((r) => r.updates_optin === "Yes").length;
   $("s-invited").textContent = DATA.filter((r) => (r.invited_by || "").trim()).length;
   $("s-door").textContent = DATA.filter((r) => r.checked_in_at).length;
+  $("s-accepted").textContent = DATA.filter((r) => r.status === "accepted").length;
   for (const [sel, field] of [["filter-source", "heard_from"], ["filter-occ", "occupation"]]) {
     const el = $(sel);
     const current = el.value;
@@ -236,6 +295,8 @@ async function unlock(key, { silent } = {}) {
     $("dash").classList.add("on");
     $("top-actions").hidden = false;
     hydrate();
+    loadSettings();
+    focusFromHash();
   } catch (err) {
     sessionStorage.removeItem(KEY_STORE);
     if (!silent) $("gate-err").textContent = err.message;
@@ -247,8 +308,52 @@ $("search").addEventListener("input", render);
 $("filter-source").addEventListener("change", render);
 $("filter-occ").addEventListener("change", render);
 $("filter-door").addEventListener("change", render);
+$("filter-status").addEventListener("change", render);
+
+function reviewCell(r) {
+  const s = r.status || "pending";
+  if (s === "accepted") {
+    return `<span class="pill pill-ok">Accepted</span>` +
+      (r.invited_at ? `<span class="door-time">Invited ${esc(fmtTime(r.invited_at))}</span>` : "") +
+      `<button class="rev-undo" data-review="${esc(r.id)}" data-status="pending">Undo</button>`;
+  }
+  if (s === "declined") {
+    return `<span class="pill pill-no">Declined</span>` +
+      `<button class="rev-undo" data-review="${esc(r.id)}" data-status="pending">Undo</button>`;
+  }
+  return `<button class="rev-btn" data-review="${esc(r.id)}" data-status="accepted">Accept</button>` +
+    `<button class="rev-btn pill-no" data-review="${esc(r.id)}" data-status="declined">Decline</button>`;
+}
+
+async function setStatus(btn) {
+  const id = btn.dataset.review;
+  const status = btn.dataset.status;
+  const row = DATA.find((r) => r.id === id);
+  if (!row) return;
+  if (status === "accepted" && !confirm(`Accept ${row.first_name} ${row.surname} and send their invite email?`)) return;
+  if (status === "pending" && !confirm("Undo this decision? (No email is sent.)")) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch("/.netlify/functions/guest-status", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
+      body: JSON.stringify({ id, status, guest: { first_name: row.first_name, surname: row.surname, email: row.email } }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
+    row.status = status;
+    row.invited_at = (body.entry && body.entry.invited_at) || "";
+    hydrate();
+    if (body.note) alert(body.note);
+  } catch (err) {
+    btn.disabled = false;
+    alert(err.message);
+  }
+}
 
 $("rows").addEventListener("click", async (e) => {
+  const rev = e.target.closest("[data-review]");
+  if (rev) return setStatus(rev);
   const btn = e.target.closest("[data-checkin]");
   if (!btn) return;
   const id = btn.dataset.checkin;
@@ -275,7 +380,7 @@ $("refresh-btn").addEventListener("click", () => unlock(sessionStorage.getItem(K
 $("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
 
 $("csv-btn").addEventListener("click", () => {
-  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin","checked_in_at"];
+  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin","status","invited_at","checked_in_at"];
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = "﻿" + [cols.join(","), ...DATA.map((r) => cols.map((c) => cell(r[c])).join(","))].join("\r\n");
   const a = document.createElement("a");
@@ -284,6 +389,62 @@ $("csv-btn").addEventListener("click", () => {
   a.click();
   URL.revokeObjectURL(a.href);
 });
+
+/* ---- event settings (feeds the acceptance email) ---- */
+const EV_FIELDS = ["event_name","date_text","date_iso","doors_open","last_entry","end_time","venue_name","venue_address","maps_url","spotify_url"];
+
+$("event-toggle").addEventListener("click", () => $("event-card").classList.toggle("open"));
+
+function summariseSettings(s) {
+  const bits = [s.date_text, s.venue_name].filter(Boolean);
+  $("event-summary").textContent = bits.length ? bits.join(" · ") : "Not set — tap to fill in";
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch("/.netlify/functions/settings", { headers: { "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" } });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return;
+    const s = body.settings || {};
+    for (const f of EV_FIELDS) $("ev-" + f).value = s[f] || "";
+    summariseSettings(s);
+  } catch (_) {}
+}
+
+$("event-save").addEventListener("click", async () => {
+  const s = {};
+  for (const f of EV_FIELDS) s[f] = $("ev-" + f).value.trim();
+  $("event-save").disabled = true;
+  try {
+    const res = await fetch("/.netlify/functions/settings", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
+      body: JSON.stringify(s),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
+    summariseSettings(body.settings || s);
+    $("event-note").textContent = "Saved — new acceptance emails use these details.";
+  } catch (err) {
+    $("event-note").textContent = err.message;
+  }
+  $("event-save").disabled = false;
+});
+
+/* ---- QR deep link: scanning a guest's code opens #guest=<id> ---- */
+function focusFromHash() {
+  const m = (location.hash || "").match(/guest=([\w-]+)/);
+  if (!m) return;
+  const row = DATA.find((r) => r.id === m[1]);
+  if (!row) return;
+  $("search").value = `${row.first_name} ${row.surname}`.trim();
+  $("filter-status").value = "";
+  $("filter-door").value = "";
+  render();
+  const tr = $("rows").querySelector("tr");
+  if (tr) { tr.classList.add("hl"); tr.scrollIntoView({ block: "center" }); }
+}
+window.addEventListener("hashchange", focusFromHash);
 
 const saved = sessionStorage.getItem(KEY_STORE);
 if (saved) unlock(saved, { silent: true });

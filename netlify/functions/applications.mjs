@@ -51,8 +51,10 @@ export default async (req) => {
   }
 
   let checkins = {};
+  let statuses = {};
   try {
     checkins = (await getStore("checkins").get("map", { type: "json" })) || {};
+    statuses = (await getStore("statuses").get("map", { type: "json" })) || {};
   } catch (e) {
     console.error("blobs read failed", e);
   }
@@ -61,6 +63,9 @@ export default async (req) => {
     const row = { id: s.id, created_at: s.created_at };
     for (const f of FIELDS) row[f] = (s.data && s.data[f]) || "";
     row.checked_in_at = (checkins[s.id] && checkins[s.id].at) || "";
+    const st = statuses[s.id] || {};
+    row.status = st.status || "pending";
+    row.invited_at = st.invited_at || "";
     return row;
   });
 

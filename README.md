@@ -100,6 +100,16 @@ as the **A· Door** app (`admin.webmanifest`); the main site installs as
 "Application Received | A Night With Ascension" email to the guest
 automatically — this needs `NOTIFY_FROM` on a Resend-verified domain.
 
+**Review & accept (guest-list invites):** each admin row has Accept / Decline.
+Accepting emails the guest "Welcome to Ascension." (via
+`netlify/functions/guest-status.mjs`): event details from the admin's
+"Event details" card (`settings.mjs`, stored in Blobs), the Contemporary
+Elegance dress code, photography/respect notes, a personal QR code
+(api.qrserver.com) that deep-links to `admin.html#guest=<id>` so the doorman
+scanning it lands on that guest's row, a Google Maps button, Google Calendar
+link and an `.ics` attachment (needs the ISO date filled in). Declines are
+silent; both are undoable; status + invited time appear in the table and CSV.
+
 ## Emails
 
 The two templates in `emails/` are self-contained dark HTML emails (inline styles,
