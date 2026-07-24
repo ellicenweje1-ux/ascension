@@ -3,10 +3,9 @@
    ================================================================ */
 
 const CONFIG = {
-  // Applications post to Netlify Forms (the hidden form in index.html
-  // registers the fields). Submissions appear in the Netlify dashboard,
-  // trigger email notifications, and feed /admin.html.
-  useNetlifyForms: true,
+  // Applications post to the /register function, which stores them in
+  // Netlify Blobs (no monthly cap) and sends the confirmation + team alert.
+  endpoint: "/.netlify/functions/register",
   // Optional server-side Instagram existence check. Should accept
   // ?username=<name> and return JSON { exists: true|false }.
   // Browsers cannot query instagram.com directly (CORS), so without
@@ -180,8 +179,7 @@ form.addEventListener("submit", async (e) => {
   btn.firstElementChild.textContent = "One moment…";
 
   const payload = {
-    "form-name": "ascension-applications",
-    company: "", // honeypot — stays empty for humans
+    company: form.company ? form.company.value : "", // honeypot — stays empty for humans
     first_name: form.first_name.value.trim(),
     surname: form.surname.value.trim(),
     email: form.email.value.trim(),
@@ -194,11 +192,11 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    if (CONFIG.useNetlifyForms) {
-      const res = await fetch("/", {
+    if (CONFIG.endpoint) {
+      const res = await fetch(CONFIG.endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload).toString(),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Submission failed (${res.status})`);
     } else {

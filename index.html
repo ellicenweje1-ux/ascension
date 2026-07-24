@@ -75,6 +75,9 @@
     </section>
 
     <form id="register-form" class="register-form" novalidate>
+      <!-- honeypot: hidden from people, tempting to bots -->
+      <input type="text" name="company" id="f-company" tabindex="-1" autocomplete="off" aria-hidden="true"
+        style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;pointer-events:none">
       <!-- progress -->
       <div class="steps-progress" role="tablist" aria-label="Form progress">
         <span class="step-dot is-current" data-step-dot="1"></span>

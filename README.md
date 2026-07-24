@@ -48,67 +48,70 @@ scalable spares. For the email header image, use the live site's copy:
 `https://<your-site>/assets/wordmark-light.png` — but note it's white on
 transparent, so it only shows on the dark email background (that's correct).
 
-## How applications flow (Netlify Forms)
+## How applications flow (Netlify Blobs — no cap)
 
-The form posts to **Netlify Forms** (the hidden form in `index.html` registers
-the fields at deploy time). One-time setup on the Netlify project:
+The form posts to **`/.netlify/functions/register`**, which stores each
+application in **Netlify Blobs** (no monthly limit — the old 100/month Netlify
+Forms cap is gone) and sends the guest confirmation + a team alert via Resend.
+The admin reads everything through `applications.mjs`, which merges the Blobs
+applications with the first ~100 legacy Netlify Forms submissions (via the
+Netlify API token) so no history is lost.
 
-1. **Project configuration → Forms → Enable form detection**, then redeploy.
-2. **Forms → Form notifications → Add notification → Email** — enter any inbox;
-   every application emails there. Change it any time, no code involved.
+A hidden honeypot field (`company`) blocks bots. `instagramCheckUrl` in
+`js/app.js` stays optional (CORS means the site validates handle *format* by
+default).
 
-Submissions are stored in the Netlify dashboard (Forms tab) and power the admin
-page below. Free tier: 100 submissions/month.
+## The guest pipeline
 
-**Email alerts (free route):** Netlify's built-in email notifications are
-Pro-only, so `netlify/functions/submission-created.js` sends the alert instead —
-Netlify runs it automatically on every submission. Set two more environment
-variables to switch it on: `RESEND_API_KEY` (from a free resend.com account) and
-`NOTIFY_EMAIL` (the address alerts go to — on Resend's free tier without a
-verified domain this must be the email the Resend account was created with).
-Without those variables it silently does nothing; submissions are stored either way.
+Each guest moves through colour-coded statuses, all driven from the admin:
 
-`instagramCheckUrl` in `js/app.js` stays optional — browsers can't query
-instagram.com directly (CORS), so by default the site validates the handle's
-*format*; point this at a tiny endpoint returning `{ "exists": true|false }`
-for a true existence check.
+1. **Received** — application stored; guest gets "Application Received".
+2. **Invited** — admin taps **Accept** → the Invitation email sends with a
+   personal **Confirm Attendance** button (and a decline link). No QR codes.
+3. **Confirmed** — guest opens `/confirm.html?id=…&t=<token>`, sees the event
+   details/dress code/photography notice/terms, and taps **Confirm Attendance**.
+4. **Ticketed (Digital Invitation Issued)** — confirmation mints a unique
+   ticket reference `ANWA-<NN><DDMMYY>` (e.g. `ANWA-01310726`) and emails the
+   premium digital invitation (card, not ticket — no QR). Shown on the page too.
+5. **Declined** — admin decline (silent) or guest declines via the email link.
+6. **Waitlisted** — admin taps **Waitlist** → the priority-waitlist email sends.
+
+Functions: `register.mjs`, `guest-status.mjs` (accept/waitlist/decline/resend/
+undo), `rsvp.mjs` (guest view/confirm/decline + ticket minting), `settings.mjs`
+(event details), plus the shared `lib/shared.mjs`. State lives in Netlify Blobs.
 
 ## Admin dashboard (`/admin.html`)
 
-A password-gated guest-list view: stats (total / last 7 days / opted-in /
-invited-by), search, source & occupation filters, Instagram links, CSV export.
-It reads submissions through `netlify/functions/applications.js`, which keeps
-the Netlify API token server-side. One-time setup:
+Password-gated. Pipeline stats, search, source/occupation/status filters,
+colour-coded status pills, ticket references, per-guest actions, door check-in,
+CSV export, and the Communications Centre. One-time setup:
 
-1. Netlify → avatar (top right) → **User settings → Applications →
-   Personal access tokens → New access token** → copy it.
-2. On the project: **Project configuration → Environment variables** → add
-   `ADMIN_PASSWORD` (your choice of password) and `NETLIFY_ACCESS_TOKEN`
-   (the token from step 1).
-3. **Deploys → Trigger deploy** so the variables take effect.
+1. Netlify → avatar → **User settings → Applications → Personal access tokens →
+   New access token** → copy it (used only to read the ~100 legacy Forms rows).
+2. **Project configuration → Environment variables** → add `ADMIN_PASSWORD`
+   (your password) and `NETLIFY_ACCESS_TOKEN` (the token). `RESEND_API_KEY`,
+   `NOTIFY_FROM`, `NOTIFY_EMAIL` should already be set from the email step.
+3. **Deploys → Trigger deploy**.
 
-Then open `https://<your-site>/admin.html` and unlock with the password.
+**Communications Centre:** reusable templates (Reminder, Cancellation, Waitlist,
+General Announcement — plus the auto Invitation) editable in `templates.mjs`;
+`broadcast.mjs` sends a chosen template to a recipient group (all / opted-in /
+by status) via Resend's batch endpoint, personalising `{first_name}`, `{date}`,
+`{arrival}`, `{venue}`.
 
-**Door check-ins:** each guest row has a Check in button — tap it on arrival and
-the attendance is logged (stored in Netlify Blobs via
-`netlify/functions/checkin.mjs`, timestamped, undoable, included in the CSV and
-the "Checked in at door" stat). The admin page installs to a phone home screen
-as the **A· Door** app (`admin.webmanifest`); the main site installs as
-**Ascension** (`site.webmanifest`).
+**Event reminder:** `scheduled-reminder.mjs` runs daily and, a few days before
+the event (`REMINDER_LEAD_DAYS`, default 3), emails all ticketed guests the
+date/arrival/venue/dress-code reminder (idempotent per event date). The admin's
+**Send event reminder now** button triggers the same send on demand.
 
-**Guest confirmation email:** `submission-created.js` also sends the
-"Application Received | A Night With Ascension" email to the guest
-automatically — this needs `NOTIFY_FROM` on a Resend-verified domain.
+**Door check-ins:** each row has a Check in button (name-based; admission is by
+guest-list verification, no QR). Logged in Blobs via `checkin.mjs`, timestamped,
+in the CSV. The admin installs as the **A· Door** app; the main site as
+**Ascension**.
 
-**Review & accept (guest-list invites):** each admin row has Accept / Decline.
-Accepting emails the guest "Welcome to Ascension." (via
-`netlify/functions/guest-status.mjs`): event details from the admin's
-"Event details" card (`settings.mjs`, stored in Blobs), the Contemporary
-Elegance dress code, photography/respect notes, a personal QR code
-(api.qrserver.com) that deep-links to `admin.html#guest=<id>` so the doorman
-scanning it lands on that guest's row, a Google Maps button, Google Calendar
-link and an `.ics` attachment (needs the ISO date filled in). Declines are
-silent; both are undoable; status + invited time appear in the table and CSV.
+**Dependency:** `@netlify/blobs` is listed in `package.json`; Netlify installs
+it at deploy. (A local in-memory stub under `node_modules` is used only for
+offline tests and is git-ignored.)
 
 ## Emails
 

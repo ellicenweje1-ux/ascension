@@ -16,32 +16,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --black: #060606;
-  --ink: #0e0e0e;
-  --white: #f4f1ec;
-  --white-dim: rgba(244,241,236,0.62);
-  --white-faint: rgba(244,241,236,0.38);
-  --hairline: rgba(244,241,236,0.14);
-  --hairline-strong: rgba(244,241,236,0.32);
-  --sans: "Jost", "Futura", system-ui, sans-serif;
+  --black:#060606; --ink:#0e0e0e; --white:#f4f1ec;
+  --white-dim:rgba(244,241,236,0.62); --white-faint:rgba(244,241,236,0.38);
+  --hairline:rgba(244,241,236,0.14); --hairline-strong:rgba(244,241,236,0.32);
+  --sans:"Jost","Futura",system-ui,sans-serif;
+  --s-invited:#9db4cc; --s-confirmed:#9ec4a6; --s-issued:#c7ad84;
+  --s-wait:#cca969; --s-declined:#c69a92;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--black); color:var(--white); font-family:var(--sans); font-weight:300; min-height:100svh; -webkit-font-smoothing:antialiased; }
 button { font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
 ::selection { background:var(--white); color:var(--black); }
 
-.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
-
-header.top { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:26px; border-bottom:1px solid var(--hairline); }
+.wrap { max-width:1240px; margin:0 auto; padding:40px 24px 90px; }
+header.top { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:26px; border-bottom:1px solid var(--hairline); flex-wrap:wrap; }
 .brand { display:flex; align-items:center; gap:16px; }
 .brand img { height:26px; width:auto; display:block; }
 .brand span { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--white-faint); }
-.top-actions { display:flex; gap:10px; }
+.top-actions { display:flex; gap:10px; flex-wrap:wrap; }
 
-.btn { padding:11px 22px; border:1px solid var(--hairline-strong); font-size:11px; letter-spacing:0.28em; text-indent:0.28em; text-transform:uppercase; font-weight:400; transition: border-color .3s, background .3s, color .3s; }
+.btn { padding:11px 22px; border:1px solid var(--hairline-strong); font-size:11px; letter-spacing:0.28em; text-indent:0.28em; text-transform:uppercase; font-weight:400; transition:border-color .3s,background .3s,color .3s; }
 .btn:hover { border-color:var(--white); }
 .btn-solid { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
 .btn-solid:hover { opacity:.88; }
+.btn[disabled] { opacity:.5; cursor:wait; }
 
 /* password gate */
 .gate { min-height:70svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:26px; }
@@ -52,13 +50,13 @@ header.top { display:flex; align-items:center; justify-content:space-between; ga
 .gate input:focus { border-color:var(--white); }
 .gate .err { min-height:18px; font-size:12.5px; color:rgba(232,196,188,.9); letter-spacing:.05em; }
 
-/* dashboard */
 .dash { display:none; }
 .dash.on { display:block; }
-.stats { display:flex; flex-wrap:wrap; gap:14px; margin:30px 0 8px; }
-.stat { border:1px solid var(--hairline); padding:18px 26px; min-width:150px; }
-.stat b { display:block; font-size:26px; font-weight:200; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
-.stat span { font-size:9.5px; letter-spacing:.32em; text-transform:uppercase; color:var(--white-faint); }
+.stats { display:flex; flex-wrap:wrap; gap:12px; margin:30px 0 8px; }
+.stat { border:1px solid var(--hairline); padding:16px 22px; min-width:120px; }
+.stat b { display:block; font-size:24px; font-weight:200; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+.stat span { font-size:9px; letter-spacing:.28em; text-transform:uppercase; color:var(--white-faint); }
+.stat.lead b { color:var(--white); }
 
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin:26px 0 18px; }
 .controls input, .controls select { background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13.5px; letter-spacing:.04em; padding:11px 14px; outline:none; border-radius:0; }
@@ -67,7 +65,7 @@ header.top { display:flex; align-items:center; justify-content:space-between; ga
 .controls select option { background:var(--ink); }
 
 .tablewrap { border:1px solid var(--hairline); overflow-x:auto; }
-table { width:100%; border-collapse:collapse; min-width:980px; }
+table { width:100%; border-collapse:collapse; min-width:1040px; }
 th { font-size:9.5px; letter-spacing:.3em; text-transform:uppercase; font-weight:400; color:var(--white-faint); text-align:left; padding:14px 16px; border-bottom:1px solid var(--hairline); white-space:nowrap; }
 td { font-size:13.5px; letter-spacing:.03em; padding:13px 16px; border-bottom:1px solid var(--hairline); color:var(--white-dim); vertical-align:top; }
 tr:last-child td { border-bottom:0; }
@@ -76,39 +74,66 @@ td.name { color:var(--white); white-space:nowrap; }
 td.date { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--white-faint); }
 td a { color:var(--white); text-decoration:none; border-bottom:1px solid var(--hairline-strong); }
 td a:hover { border-color:var(--white); }
+tr.hl td { background:rgba(244,241,236,0.08); }
+
 .pill { display:inline-block; font-size:10px; letter-spacing:.18em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:3px 9px; }
+.pill.yes { color:var(--white); }
+/* status pills (colour-coded) */
+.st { display:inline-block; font-size:10px; letter-spacing:.16em; text-transform:uppercase; border:1px solid; padding:3px 9px; white-space:nowrap; }
+.st.pending { color:var(--white-faint); border-color:var(--hairline-strong); }
+.st.invited { color:var(--s-invited); border-color:var(--s-invited); }
+.st.confirmed { color:var(--s-confirmed); border-color:var(--s-confirmed); }
+.st.issued { color:var(--s-issued); border-color:var(--s-issued); background:rgba(199,173,132,.12); }
+.st.waitlisted { color:var(--s-wait); border-color:var(--s-wait); }
+.st.declined { color:var(--s-declined); border-color:var(--s-declined); }
+
+td.review { white-space:nowrap; min-width:210px; }
+.rev-btn { font-size:10px; letter-spacing:.16em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:7px 11px; margin:0 5px 5px 0; transition:background .3s,color .3s,border-color .3s; }
+.rev-btn:hover { border-color:var(--white); }
+.rev-btn.accept:hover { background:var(--s-confirmed); color:var(--black); border-color:var(--s-confirmed); }
+.rev-btn.wait:hover { background:var(--s-wait); color:var(--black); border-color:var(--s-wait); }
+.rev-btn.decline { color:var(--white-faint); }
+.rev-btn[disabled] { opacity:.5; cursor:wait; }
+.rev-meta { display:block; margin-top:6px; font-size:10.5px; color:var(--white-faint); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+.rev-ref { display:block; margin-top:4px; font-family:"Courier New",monospace; font-size:11.5px; letter-spacing:.14em; color:var(--s-issued); }
+.rev-undo { display:inline-block; margin-top:6px; font-size:10px; letter-spacing:.12em; color:var(--white-faint); text-transform:uppercase; }
+.rev-undo:hover { color:var(--white); }
+
 .door-btn { font-size:10px; letter-spacing:.2em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:8px 14px; white-space:nowrap; transition:background .3s,color .3s,border-color .3s; }
 .door-btn:hover { border-color:var(--white); }
 .door-btn.in { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
 .door-btn[disabled] { opacity:.5; cursor:wait; }
 td.door { white-space:nowrap; }
 .door-time { display:block; margin-top:5px; font-size:10.5px; color:var(--white-faint); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
-td.review { white-space:nowrap; }
-.rev-btn { font-size:10px; letter-spacing:.18em; text-transform:uppercase; border:1px solid var(--hairline-strong); padding:7px 12px; margin-right:6px; transition:background .3s,color .3s,border-color .3s; }
-.rev-btn:hover { border-color:var(--white); }
-.rev-btn[disabled] { opacity:.5; cursor:wait; }
-.pill-ok { background:var(--white); color:var(--black); border-color:var(--white); font-weight:500; }
-.pill-no { color:var(--white-faint); }
-.rev-undo { display:block; margin-top:6px; font-size:10px; letter-spacing:.12em; color:var(--white-faint); text-transform:uppercase; }
-.rev-undo:hover { color:var(--white); }
-tr.hl td { background:rgba(244,241,236,0.08); }
 
-/* event settings card */
-.event-card { border:1px solid var(--hairline); margin:26px 0 0; }
-.event-head { width:100%; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; text-align:left; }
-.event-head span { font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--white-faint); }
-.event-head b { font-weight:300; font-size:12px; color:var(--white-dim); letter-spacing:.06em; }
-.event-body { padding:6px 20px 22px; display:none; }
-.event-card.open .event-body { display:block; }
-.event-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
-.event-grid label { display:block; font-size:9px; letter-spacing:.26em; text-transform:uppercase; color:var(--white-faint); margin-bottom:6px; }
-.event-grid input { width:100%; background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13.5px; letter-spacing:.03em; padding:10px 12px; outline:none; border-radius:0; }
-.event-grid input:focus { border-color:var(--white); }
-.event-actions { margin-top:16px; display:flex; align-items:center; gap:14px; }
-.event-note { font-size:11.5px; color:var(--white-faint); letter-spacing:.04em; }
+/* collapsible cards (event + comms) */
+.card { border:1px solid var(--hairline); margin:26px 0 0; }
+.card-head { width:100%; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 20px; text-align:left; }
+.card-head span { font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--white-faint); }
+.card-head b { font-weight:300; font-size:12px; color:var(--white-dim); letter-spacing:.06em; text-align:right; }
+.card-body { padding:6px 20px 24px; display:none; }
+.card.open .card-body { display:block; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+.grid label, .field label { display:block; font-size:9px; letter-spacing:.26em; text-transform:uppercase; color:var(--white-faint); margin-bottom:6px; }
+.grid input, .field input, .field select, .field textarea { width:100%; background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13.5px; letter-spacing:.03em; padding:10px 12px; outline:none; border-radius:0; }
+.grid input:focus, .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--white); }
+.field { margin-bottom:16px; }
+.field textarea { min-height:170px; line-height:1.6; resize:vertical; }
+.field select option { background:var(--ink); }
+.row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.row > .field { flex:1; min-width:180px; margin-bottom:0; }
+.actions { margin-top:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.note { font-size:11.5px; color:var(--white-faint); letter-spacing:.04em; }
+.comms-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.comms-tab { font-size:10px; letter-spacing:.2em; text-transform:uppercase; border:1px solid var(--hairline); padding:8px 14px; color:var(--white-dim); }
+.comms-tab.active { border-color:var(--white); color:var(--white); }
+
 .empty { padding:60px 20px; text-align:center; color:var(--white-faint); font-size:14px; letter-spacing:.08em; }
 .foot { margin-top:16px; font-size:11.5px; color:var(--white-faint); letter-spacing:.05em; }
-@media (max-width:640px){ .wrap{padding:24px 14px 60px;} .stat{min-width:calc(50% - 7px);} }
+.legend { display:flex; flex-wrap:wrap; gap:10px 18px; margin:14px 0 0; }
+.legend span { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--white-faint); display:flex; align-items:center; gap:7px; }
+.legend i { width:10px; height:10px; border:1px solid; display:inline-block; }
+@media (max-width:640px){ .wrap{padding:24px 14px 60px;} .stat{min-width:calc(50% - 6px);} }
 </style>
 </head>
 <body>
@@ -140,24 +165,26 @@ tr.hl td { background:rgba(244,241,236,0.08); }
   <!-- dashboard -->
   <section class="dash" id="dash">
     <div class="stats">
-      <div class="stat"><b id="s-total">–</b><span>Applications</span></div>
-      <div class="stat"><b id="s-week">–</b><span>Last 7 days</span></div>
-      <div class="stat"><b id="s-optin">–</b><span>Opted in to updates</span></div>
-      <div class="stat"><b id="s-invited">–</b><span>Invited by someone</span></div>
-      <div class="stat"><b id="s-accepted">–</b><span>Accepted</span></div>
-      <div class="stat"><b id="s-door">–</b><span>Checked in at door</span></div>
+      <div class="stat lead"><b id="s-total">–</b><span>Applications</span></div>
+      <div class="stat"><b id="s-invited">–</b><span>Invited</span></div>
+      <div class="stat"><b id="s-confirmed">–</b><span>Confirmed</span></div>
+      <div class="stat"><b id="s-issued">–</b><span>Ticketed</span></div>
+      <div class="stat"><b id="s-wait">–</b><span>Waitlisted</span></div>
+      <div class="stat"><b id="s-declined">–</b><span>Declined</span></div>
+      <div class="stat"><b id="s-door">–</b><span>Checked in</span></div>
     </div>
 
-    <div class="event-card" id="event-card">
-      <button type="button" class="event-head" id="event-toggle">
-        <span>Event details — used in the acceptance email</span>
+    <!-- event details -->
+    <div class="card" id="event-card">
+      <button type="button" class="card-head" data-toggle="event-card">
+        <span>Event details — used across all guest emails</span>
         <b id="event-summary">…</b>
       </button>
-      <div class="event-body">
-        <div class="event-grid">
+      <div class="card-body">
+        <div class="grid">
           <div><label>Event name</label><input id="ev-event_name" placeholder="A Night With Ascension"></div>
-          <div><label>Date (as written to guests)</label><input id="ev-date_text" placeholder="Friday 31st July"></div>
-          <div><label>Date (for calendars, YYYY-MM-DD)</label><input id="ev-date_iso" placeholder="2026-07-31"></div>
+          <div><label>Date (as written to guests)</label><input id="ev-date_text" placeholder="Friday 31 July 2026"></div>
+          <div><label>Date (for ticket ref &amp; reminders, YYYY-MM-DD)</label><input id="ev-date_iso" placeholder="2026-07-31"></div>
           <div><label>Doors open (HH:MM)</label><input id="ev-doors_open" placeholder="19:00"></div>
           <div><label>Last entry (HH:MM)</label><input id="ev-last_entry" placeholder="21:00"></div>
           <div><label>Event ends (HH:MM, optional)</label><input id="ev-end_time" placeholder="23:30"></div>
@@ -166,21 +193,69 @@ tr.hl td { background:rgba(244,241,236,0.08); }
           <div><label>Google Maps link (optional)</label><input id="ev-maps_url" placeholder="https://maps.app.goo.gl/…"></div>
           <div><label>Spotify playlist link (optional)</label><input id="ev-spotify_url" placeholder="https://open.spotify.com/…"></div>
         </div>
-        <div class="event-actions">
+        <div class="actions">
           <button type="button" class="btn btn-solid" id="event-save">Save details</button>
-          <span class="event-note" id="event-note">Fill these in before accepting guests — they appear in the invite email.</span>
+          <span class="note" id="event-note">Fill these in before inviting guests — they appear in every guest email and the ticket reference.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- communications centre -->
+    <div class="card" id="comms-card">
+      <button type="button" class="card-head" data-toggle="comms-card">
+        <span>Communications centre — reusable emails</span>
+        <b>Reminder · Cancellation · Waitlist · Announcement</b>
+      </button>
+      <div class="card-body">
+        <div class="comms-tabs" id="comms-tabs"></div>
+        <div class="field"><label>Subject</label><input id="tpl-subject"></div>
+        <div class="field"><label>Message — use {first_name}, {date}, {arrival}, {venue}</label><textarea id="tpl-body"></textarea></div>
+        <div class="actions">
+          <button type="button" class="btn" id="tpl-save">Save template</button>
+          <span class="note" id="tpl-note"></span>
+        </div>
+        <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+          <div class="row">
+            <div class="field"><label>Send a test to</label><input id="tpl-test-to" type="email" placeholder="you@example.com"></div>
+            <button type="button" class="btn" id="tpl-test">Send test</button>
+          </div>
+          <div class="row" style="margin-top:14px;">
+            <div class="field"><label>Send to group</label>
+              <select id="tpl-group">
+                <option value="optin">Everyone opted-in to updates</option>
+                <option value="all">Everyone who applied</option>
+                <option value="pending">Status · Received (pending)</option>
+                <option value="invited">Status · Invited</option>
+                <option value="confirmed">Status · Confirmed</option>
+                <option value="issued">Status · Ticketed</option>
+                <option value="waitlisted">Status · Waitlisted</option>
+                <option value="declined">Status · Declined</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-solid" id="tpl-send">Send to group</button>
+          </div>
+          <p class="note" id="send-note" style="margin-top:12px;"></p>
+        </div>
+        <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+          <div class="actions">
+            <button type="button" class="btn" id="reminder-now">Send event reminder now</button>
+            <span class="note">Reminders also send automatically a few days before the event to ticketed guests.</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="controls">
-      <input id="search" type="search" placeholder="Search name, email, Instagram, occupation…">
+      <input id="search" type="search" placeholder="Search name, email, Instagram, occupation, ticket…">
       <select id="filter-source"><option value="">All sources</option></select>
       <select id="filter-occ"><option value="">All occupations</option></select>
       <select id="filter-status">
         <option value="">All statuses</option>
-        <option value="pending">Pending review</option>
-        <option value="accepted">Accepted</option>
+        <option value="pending">Received</option>
+        <option value="invited">Invited</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="issued">Ticketed</option>
+        <option value="waitlisted">Waitlisted</option>
         <option value="declined">Declined</option>
       </select>
       <select id="filter-door">
@@ -193,17 +268,25 @@ tr.hl td { background:rgba(244,241,236,0.08); }
     <div class="tablewrap">
       <table>
         <thead><tr>
-          <th>Door</th><th>Name</th><th>Review</th><th>Received</th><th>Email</th><th>Phone</th><th>Instagram</th>
-          <th>Occupation</th><th>Heard from</th><th>Invited by</th><th>Updates</th>
+          <th>Door</th><th>Name</th><th>Status</th><th>Received</th><th>Email</th><th>Phone</th>
+          <th>Instagram</th><th>Occupation</th><th>Heard from</th><th>Invited by</th><th>Updates</th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <p class="empty" id="empty" hidden>No applications match.</p>
     </div>
     <p class="foot" id="foot"></p>
-    <p class="foot">Door night? Add this page to your phone's home screen for one-tap check-ins —
-      iPhone: Share → Add to Home Screen · Android: menu ⋮ → Add to Home screen. It installs as the
-      <b>A· Door</b> app. The main site installs as an app the same way.</p>
+    <div class="legend">
+      <span><i style="border-color:var(--white-faint)"></i>Received</span>
+      <span><i style="border-color:var(--s-invited)"></i>Invited</span>
+      <span><i style="border-color:var(--s-confirmed)"></i>Confirmed</span>
+      <span><i style="border-color:var(--s-issued);background:rgba(199,173,132,.2)"></i>Ticketed</span>
+      <span><i style="border-color:var(--s-wait)"></i>Waitlisted</span>
+      <span><i style="border-color:var(--s-declined)"></i>Declined</span>
+    </div>
+    <p class="foot">Door night? Add this page to your phone's home screen — iPhone: Share → Add to Home Screen ·
+      Android: menu ⋮ → Add to Home screen. It installs as the <b>A· Door</b> app. Check guests in by name;
+      admission is by guest-list verification.</p>
   </section>
 
 </div>
@@ -211,33 +294,72 @@ tr.hl td { background:rgba(244,241,236,0.08); }
 <script>
 const KEY_STORE = "ascension_admin_key";
 let DATA = [];
-
+const key = () => sessionStorage.getItem(KEY_STORE) || "";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-async function load(key) {
-  const res = await fetch("/.netlify/functions/applications", { headers: { "x-admin-key": key } });
+const STATUS_META = {
+  pending:    { label: "Received" },
+  invited:    { label: "Invited" },
+  confirmed:  { label: "Confirmed" },
+  issued:     { label: "Ticketed" },
+  waitlisted: { label: "Waitlisted" },
+  declined:   { label: "Declined" },
+};
+
+async function apiGet(path) {
+  const res = await fetch(path, { headers: { "x-admin-key": key() } });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
-  return body.submissions || [];
+  return body;
+}
+async function apiPost(path, payload) {
+  const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-admin-key": key() }, body: JSON.stringify(payload) });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
+  return body;
 }
 
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
+function fmtDate(iso) { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" }); }
+function fmtTime(iso) { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString("en-GB", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }); }
 
-function fmtTime(iso) {
-  const d = new Date(iso);
-  return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+/* ---------- table ---------- */
+function reviewCell(r) {
+  const s = r.status || "pending";
+  const pill = `<span class="st ${s}">${STATUS_META[s] ? STATUS_META[s].label : s}</span>`;
+  const undo = `<a class="rev-undo" data-action="undo" data-id="${esc(r.id)}">Undo</a>`;
+  if (s === "pending") {
+    return `<button class="rev-btn accept" data-action="accept" data-id="${esc(r.id)}">Accept</button>` +
+      `<button class="rev-btn wait" data-action="waitlist" data-id="${esc(r.id)}">Waitlist</button>` +
+      `<button class="rev-btn decline" data-action="decline" data-id="${esc(r.id)}">Decline</button>`;
+  }
+  if (s === "invited") {
+    return pill + (r.invited_at ? `<span class="rev-meta">Sent ${esc(fmtTime(r.invited_at))}</span>` : "") +
+      `<div><button class="rev-btn" data-action="resend" data-id="${esc(r.id)}">Resend</button>${undo}</div>`;
+  }
+  if (s === "confirmed") {
+    return pill + (r.confirmed_at ? `<span class="rev-meta">${esc(fmtTime(r.confirmed_at))}</span>` : "") + `<div>${undo}</div>`;
+  }
+  if (s === "issued") {
+    return pill + (r.ticket_ref ? `<span class="rev-ref">${esc(r.ticket_ref)}</span>` : "") +
+      (r.confirmed_at ? `<span class="rev-meta">Confirmed ${esc(fmtTime(r.confirmed_at))}</span>` : "") +
+      `<div><button class="rev-btn" data-action="resend" data-id="${esc(r.id)}">Resend</button>${undo}</div>`;
+  }
+  if (s === "waitlisted") {
+    return pill +
+      `<div><button class="rev-btn accept" data-action="accept" data-id="${esc(r.id)}">Accept</button>` +
+      `<button class="rev-btn decline" data-action="decline" data-id="${esc(r.id)}">Decline</button>${undo}</div>`;
+  }
+  if (s === "declined") {
+    return pill + `<div>${undo}</div>`;
+  }
+  return pill;
 }
 
 function render() {
   const q = $("search").value.trim().toLowerCase();
-  const src = $("filter-source").value;
-  const occ = $("filter-occ").value;
-  const door = $("filter-door").value;
-  const st = $("filter-status").value;
+  const src = $("filter-source").value, occ = $("filter-occ").value;
+  const door = $("filter-door").value, st = $("filter-status").value;
   const rows = DATA.filter((r) => {
     if (src && r.heard_from !== src) return false;
     if (occ && r.occupation !== occ) return false;
@@ -245,7 +367,7 @@ function render() {
     if (door === "out" && r.checked_in_at) return false;
     if (st && (r.status || "pending") !== st) return false;
     if (!q) return true;
-    return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone]
+    return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone, r.ticket_ref]
       .join(" ").toLowerCase().includes(q);
   });
   $("rows").innerHTML = rows.map((r) => `<tr>
@@ -261,7 +383,7 @@ function render() {
     <td>${esc(r.occupation) || "—"}</td>
     <td>${esc(r.heard_from) || "—"}</td>
     <td>${esc(r.invited_by) || "—"}</td>
-    <td>${r.updates_optin === "Yes" ? '<span class="pill">Yes</span>' : "—"}</td>
+    <td>${r.updates_optin === "Yes" ? '<span class="pill yes">Yes</span>' : "—"}</td>
   </tr>`).join("");
   $("empty").hidden = rows.length > 0;
   $("foot").textContent = `Showing ${rows.length} of ${DATA.length} application${DATA.length === 1 ? "" : "s"}.`;
@@ -269,34 +391,30 @@ function render() {
 
 function hydrate() {
   DATA.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  const week = Date.now() - 7 * 864e5;
+  const count = (fn) => DATA.filter(fn).length;
   $("s-total").textContent = DATA.length;
-  $("s-week").textContent = DATA.filter((r) => new Date(r.created_at) > week).length;
-  $("s-optin").textContent = DATA.filter((r) => r.updates_optin === "Yes").length;
-  $("s-invited").textContent = DATA.filter((r) => (r.invited_by || "").trim()).length;
-  $("s-door").textContent = DATA.filter((r) => r.checked_in_at).length;
-  $("s-accepted").textContent = DATA.filter((r) => r.status === "accepted").length;
-  for (const [sel, field] of [["filter-source", "heard_from"], ["filter-occ", "occupation"]]) {
-    const el = $(sel);
-    const current = el.value;
+  $("s-invited").textContent = count((r) => r.status === "invited");
+  $("s-confirmed").textContent = count((r) => r.status === "confirmed");
+  $("s-issued").textContent = count((r) => r.status === "issued");
+  $("s-wait").textContent = count((r) => r.status === "waitlisted");
+  $("s-declined").textContent = count((r) => r.status === "declined");
+  $("s-door").textContent = count((r) => r.checked_in_at);
+  for (const [sel, field] of [["filter-source","heard_from"],["filter-occ","occupation"]]) {
+    const el = $(sel), current = el.value;
     const vals = [...new Set(DATA.map((r) => r[field]).filter(Boolean))].sort();
-    el.length = 1;
-    for (const v of vals) el.add(new Option(v, v));
-    el.value = current;
+    el.length = 1; for (const v of vals) el.add(new Option(v, v)); el.value = current;
   }
   render();
 }
 
-async function unlock(key, { silent } = {}) {
+async function load() { DATA = (await apiGet("/.netlify/functions/applications")).submissions || []; }
+
+async function unlock(k, { silent } = {}) {
+  sessionStorage.setItem(KEY_STORE, k);
   try {
-    DATA = await load(key);
-    sessionStorage.setItem(KEY_STORE, key);
-    $("gate").style.display = "none";
-    $("dash").classList.add("on");
-    $("top-actions").hidden = false;
-    hydrate();
-    loadSettings();
-    focusFromHash();
+    await load();
+    $("gate").style.display = "none"; $("dash").classList.add("on"); $("top-actions").hidden = false;
+    hydrate(); loadSettings(); loadTemplates(); focusFromHash();
   } catch (err) {
     sessionStorage.removeItem(KEY_STORE);
     if (!silent) $("gate-err").textContent = err.message;
@@ -304,149 +422,148 @@ async function unlock(key, { silent } = {}) {
 }
 
 $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); $("gate-err").textContent = ""; unlock($("gate-pass").value); });
-$("search").addEventListener("input", render);
-$("filter-source").addEventListener("change", render);
-$("filter-occ").addEventListener("change", render);
-$("filter-door").addEventListener("change", render);
-$("filter-status").addEventListener("change", render);
+["search","filter-source","filter-occ","filter-door","filter-status"].forEach((id) => $(id).addEventListener("input", render));
+$("refresh-btn").addEventListener("click", () => unlock(key()));
+$("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
+document.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", () => $(b.dataset.toggle).classList.toggle("open")));
 
-function reviewCell(r) {
-  const s = r.status || "pending";
-  if (s === "accepted") {
-    return `<span class="pill pill-ok">Accepted</span>` +
-      (r.invited_at ? `<span class="door-time">Invited ${esc(fmtTime(r.invited_at))}</span>` : "") +
-      `<button class="rev-undo" data-review="${esc(r.id)}" data-status="pending">Undo</button>`;
-  }
-  if (s === "declined") {
-    return `<span class="pill pill-no">Declined</span>` +
-      `<button class="rev-undo" data-review="${esc(r.id)}" data-status="pending">Undo</button>`;
-  }
-  return `<button class="rev-btn" data-review="${esc(r.id)}" data-status="accepted">Accept</button>` +
-    `<button class="rev-btn pill-no" data-review="${esc(r.id)}" data-status="declined">Decline</button>`;
-}
-
-async function setStatus(btn) {
-  const id = btn.dataset.review;
-  const status = btn.dataset.status;
-  const row = DATA.find((r) => r.id === id);
-  if (!row) return;
-  if (status === "accepted" && !confirm(`Accept ${row.first_name} ${row.surname} and send their invite email?`)) return;
-  if (status === "pending" && !confirm("Undo this decision? (No email is sent.)")) return;
-  btn.disabled = true;
+/* ---------- review actions ---------- */
+async function doAction(id, action) {
+  const row = DATA.find((r) => r.id === id); if (!row) return;
+  const name = `${row.first_name} ${row.surname}`.trim();
+  const prompts = {
+    accept: `Accept ${name} and send their invitation email?`,
+    waitlist: `Move ${name} to the waitlist and send the waitlist email?`,
+    decline: `Decline ${name}? (No email is sent.)`,
+    resend: `Resend the invitation email to ${name}?`,
+    undo: `Reset ${name} to pending? (No email is sent.)`,
+  };
+  if (prompts[action] && !confirm(prompts[action])) return;
   try {
-    const res = await fetch("/.netlify/functions/guest-status", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
-      body: JSON.stringify({ id, status, guest: { first_name: row.first_name, surname: row.surname, email: row.email } }),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
-    row.status = status;
-    row.invited_at = (body.entry && body.entry.invited_at) || "";
+    const body = await apiPost("/.netlify/functions/guest-status", { id, action, guest: { first_name: row.first_name, surname: row.surname, email: row.email } });
+    const e = body.entry || {};
+    row.status = body.status || "pending";
+    row.invited_at = e.invited_at || ""; row.confirmed_at = e.confirmed_at || "";
+    row.issued_at = e.issued_at || ""; row.ticket_ref = e.ticket_ref || "";
     hydrate();
     if (body.note) alert(body.note);
-  } catch (err) {
-    btn.disabled = false;
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
 
 $("rows").addEventListener("click", async (e) => {
-  const rev = e.target.closest("[data-review]");
-  if (rev) return setStatus(rev);
+  const act = e.target.closest("[data-action]");
+  if (act) return doAction(act.dataset.id, act.dataset.action);
   const btn = e.target.closest("[data-checkin]");
   if (!btn) return;
-  const id = btn.dataset.checkin;
-  const goingIn = btn.dataset.state === "in";
+  const id = btn.dataset.checkin, goingIn = btn.dataset.state === "in";
   if (!goingIn && !confirm("Undo this check-in?")) return;
   btn.disabled = true;
   try {
-    const res = await fetch("/.netlify/functions/checkin", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
-      body: JSON.stringify({ id, checked_in: goingIn }),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
-    const row = DATA.find((r) => r.id === id);
-    if (row) row.checked_in_at = body.checked_in_at || "";
+    const body = await apiPost("/.netlify/functions/checkin", { id, checked_in: goingIn });
+    const row = DATA.find((r) => r.id === id); if (row) row.checked_in_at = body.checked_in_at || "";
     hydrate();
-  } catch (err) {
-    btn.disabled = false;
-    alert(err.message);
-  }
+  } catch (err) { btn.disabled = false; alert(err.message); }
 });
-$("refresh-btn").addEventListener("click", () => unlock(sessionStorage.getItem(KEY_STORE) || ""));
-$("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
 
+/* ---------- CSV ---------- */
 $("csv-btn").addEventListener("click", () => {
-  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin","status","invited_at","checked_in_at"];
+  const cols = ["created_at","first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin","status","ticket_ref","invited_at","confirmed_at","issued_at","checked_in_at"];
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = "﻿" + [cols.join(","), ...DATA.map((r) => cols.map((c) => cell(r[c])).join(","))].join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = "ascension-applications.csv";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  a.download = "ascension-guest-list.csv"; a.click(); URL.revokeObjectURL(a.href);
 });
 
-/* ---- event settings (feeds the acceptance email) ---- */
+/* ---------- event settings ---------- */
 const EV_FIELDS = ["event_name","date_text","date_iso","doors_open","last_entry","end_time","venue_name","venue_address","maps_url","spotify_url"];
-
-$("event-toggle").addEventListener("click", () => $("event-card").classList.toggle("open"));
-
 function summariseSettings(s) {
   const bits = [s.date_text, s.venue_name].filter(Boolean);
   $("event-summary").textContent = bits.length ? bits.join(" · ") : "Not set — tap to fill in";
 }
-
 async function loadSettings() {
   try {
-    const res = await fetch("/.netlify/functions/settings", { headers: { "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" } });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) return;
-    const s = body.settings || {};
+    const s = (await apiGet("/.netlify/functions/settings")).settings || {};
     for (const f of EV_FIELDS) $("ev-" + f).value = s[f] || "";
     summariseSettings(s);
   } catch (_) {}
 }
-
 $("event-save").addEventListener("click", async () => {
-  const s = {};
-  for (const f of EV_FIELDS) s[f] = $("ev-" + f).value.trim();
+  const s = {}; for (const f of EV_FIELDS) s[f] = $("ev-" + f).value.trim();
   $("event-save").disabled = true;
-  try {
-    const res = await fetch("/.netlify/functions/settings", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-admin-key": sessionStorage.getItem(KEY_STORE) || "" },
-      body: JSON.stringify(s),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `Error ${res.status}`);
-    summariseSettings(body.settings || s);
-    $("event-note").textContent = "Saved — new acceptance emails use these details.";
-  } catch (err) {
-    $("event-note").textContent = err.message;
-  }
+  try { const b = await apiPost("/.netlify/functions/settings", s); summariseSettings(b.settings || s); $("event-note").textContent = "Saved."; }
+  catch (err) { $("event-note").textContent = err.message; }
   $("event-save").disabled = false;
 });
 
-/* ---- QR deep link: scanning a guest's code opens #guest=<id> ---- */
+/* ---------- communications centre ---------- */
+let TEMPLATES = {}, curTpl = "reminder";
+async function loadTemplates() {
+  try {
+    TEMPLATES = (await apiGet("/.netlify/functions/templates")).templates || {};
+    const order = ["reminder","cancellation","waitlist","announcement","invitation"];
+    $("comms-tabs").innerHTML = order.filter((k) => TEMPLATES[k]).map((k) =>
+      `<button type="button" class="comms-tab ${k===curTpl?"active":""}" data-tpl="${k}">${esc(TEMPLATES[k].name || k)}</button>`).join("");
+    $("comms-tabs").querySelectorAll("[data-tpl]").forEach((b) => b.addEventListener("click", () => selectTpl(b.dataset.tpl)));
+    selectTpl(curTpl);
+  } catch (_) {}
+}
+function selectTpl(k) {
+  curTpl = k;
+  $("comms-tabs").querySelectorAll("[data-tpl]").forEach((b) => b.classList.toggle("active", b.dataset.tpl === k));
+  const t = TEMPLATES[k] || {};
+  $("tpl-subject").value = t.subject || "";
+  $("tpl-body").value = t.body || "";
+  const auto = !!t.auto;
+  $("tpl-subject").disabled = auto; $("tpl-body").disabled = auto;
+  $("tpl-save").disabled = auto; $("tpl-test").disabled = auto; $("tpl-send").disabled = auto;
+  $("tpl-note").textContent = auto ? "Sent automatically per guest when you Accept — not group-sendable." : "";
+}
+$("tpl-save").addEventListener("click", async () => {
+  $("tpl-save").disabled = true;
+  try {
+    await apiPost("/.netlify/functions/templates", { key: curTpl, subject: $("tpl-subject").value, body: $("tpl-body").value });
+    if (TEMPLATES[curTpl]) { TEMPLATES[curTpl].subject = $("tpl-subject").value; TEMPLATES[curTpl].body = $("tpl-body").value; }
+    $("tpl-note").textContent = "Template saved.";
+  } catch (err) { $("tpl-note").textContent = err.message; }
+  $("tpl-save").disabled = false;
+});
+$("tpl-test").addEventListener("click", async () => {
+  const to = $("tpl-test-to").value.trim(); if (!to) { $("send-note").textContent = "Enter a test address."; return; }
+  $("tpl-test").disabled = true; $("send-note").textContent = "Sending test…";
+  try { await apiPost("/.netlify/functions/broadcast", { key: curTpl, test_to: to }); $("send-note").textContent = `Test sent to ${to}.`; }
+  catch (err) { $("send-note").textContent = err.message; }
+  $("tpl-test").disabled = false;
+});
+$("tpl-send").addEventListener("click", async () => {
+  const group = $("tpl-group").value;
+  const n = DATA.filter((r) => group === "all" ? true : group === "optin" ? r.updates_optin === "Yes" : (r.status || "pending") === group).length;
+  if (!confirm(`Send the "${TEMPLATES[curTpl] ? TEMPLATES[curTpl].name : curTpl}" email to ${n} recipient(s)?`)) return;
+  $("tpl-send").disabled = true; $("send-note").textContent = "Sending…";
+  try { const b = await apiPost("/.netlify/functions/broadcast", { key: curTpl, group }); $("send-note").textContent = `Sent to ${b.sent} of ${b.total || b.sent} recipient(s).${b.note ? " " + b.note : ""}`; }
+  catch (err) { $("send-note").textContent = err.message; }
+  $("tpl-send").disabled = false;
+});
+$("reminder-now").addEventListener("click", async () => {
+  const n = DATA.filter((r) => r.status === "issued").length;
+  if (!confirm(`Send the Reminder email to all ${n} ticketed guest(s) now?`)) return;
+  $("reminder-now").disabled = true; $("send-note").textContent = "Sending reminders…";
+  try { const b = await apiPost("/.netlify/functions/broadcast", { key: "reminder", group: "issued" }); $("send-note").textContent = `Reminder sent to ${b.sent} of ${b.total || b.sent} ticketed guest(s).`; }
+  catch (err) { $("send-note").textContent = err.message; }
+  $("reminder-now").disabled = false;
+});
+
+/* ---------- deep link ---------- */
 function focusFromHash() {
-  const m = (location.hash || "").match(/guest=([\w-]+)/);
-  if (!m) return;
-  const row = DATA.find((r) => r.id === m[1]);
-  if (!row) return;
+  const m = (location.hash || "").match(/guest=([\w-]+)/); if (!m) return;
+  const row = DATA.find((r) => r.id === m[1]); if (!row) return;
   $("search").value = `${row.first_name} ${row.surname}`.trim();
-  $("filter-status").value = "";
-  $("filter-door").value = "";
-  render();
-  const tr = $("rows").querySelector("tr");
-  if (tr) { tr.classList.add("hl"); tr.scrollIntoView({ block: "center" }); }
+  $("filter-status").value = ""; $("filter-door").value = ""; render();
+  const tr = $("rows").querySelector("tr"); if (tr) { tr.classList.add("hl"); tr.scrollIntoView({ block: "center" }); }
 }
 window.addEventListener("hashchange", focusFromHash);
 
-const saved = sessionStorage.getItem(KEY_STORE);
+const saved = key();
 if (saved) unlock(saved, { silent: true });
 </script>
 </body>
