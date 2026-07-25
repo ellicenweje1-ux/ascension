@@ -1,0 +1,17 @@
+# Ascension — Netlify build configuration
+# Static site at the repo root + serverless functions in netlify/functions.
+# The explicit `npm install` guarantees @netlify/blobs is available to the
+# functions even though the site itself has no build step.
+
+[build]
+  publish = "."
+  command = "npm install"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Scheduled reminder runs daily; the schedule is also declared in the function.
