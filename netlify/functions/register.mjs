@@ -8,7 +8,7 @@ import { stores, esc, json, siteUrl, sendEmail, fromAddress, shell, para, label,
 
 const FIELDS = ["first_name", "surname", "email", "phone", "instagram", "occupation", "heard_from", "invited_by", "updates_optin"];
 
-function confirmationEmail(data, url) {
+export function confirmationEmail(data, url) {
   const first = esc(data.first_name || "there");
   const inner = `
     <div style="border-top:1px solid rgba(244,241,236,0.14);padding-top:40px;">

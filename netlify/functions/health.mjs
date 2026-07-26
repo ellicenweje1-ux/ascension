@@ -5,6 +5,7 @@
  * email through Resend and see the result. Reveals no secrets or guest data.
  */
 import { stores } from "./lib/shared.mjs";
+import { confirmationEmail } from "./register.mjs";
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -45,13 +46,15 @@ export default async (req) => {
     else {
       try {
         const from = process.env.NOTIFY_FROM || "Ascension <onboarding@resend.dev>";
+        const url = process.env.URL || "https://ascensionldn.co.uk";
+        // send the REAL "Application Received" confirmation so we see exactly where it lands
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (compatible; AscensionSite/1.0)" },
-          body: JSON.stringify({ from, to: [testEmail], subject: "Ascension test email", html: "<p>This is an Ascension self-check test email. If you received it, sending works.</p>" }),
+          body: JSON.stringify({ from, to: [testEmail], subject: "Application Received | A Night With Ascension", html: confirmationEmail({ first_name: "there", email: testEmail }, url) }),
         });
         const body = await res.text();
-        out.email_test = res.ok ? `SENT to ${testEmail} (check inbox + spam)` : `FAILED (${res.status}): ${body.slice(0, 300)}`;
+        out.email_test = res.ok ? `SENT the real 'Application Received' email to ${testEmail} — CHECK INBOX AND SPAM/JUNK` : `FAILED (${res.status}): ${body.slice(0, 300)}`;
       } catch (e) {
         out.email_test = "FAILED: " + (e && e.message ? e.message : String(e));
       }
