@@ -179,7 +179,7 @@ form.addEventListener("submit", async (e) => {
   btn.firstElementChild.textContent = "One moment…";
 
   const payload = {
-    company: form.company ? form.company.value : "", // honeypot — stays empty for humans
+    hp_field: form.hp_field ? form.hp_field.value : "", // honeypot — stays empty for humans
     first_name: form.first_name.value.trim(),
     surname: form.surname.value.trim(),
     email: form.email.value.trim(),

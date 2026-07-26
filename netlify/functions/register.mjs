@@ -57,8 +57,9 @@ export default async (req) => {
     }
   } catch (_) {}
 
-  // Honeypot — bots fill "company". Pretend success, store nothing.
-  if ((data.company || "").trim()) return json(200, { ok: true });
+  // Honeypot — bots fill the hidden hp_field. Pretend success, store nothing.
+  // (Named hp_field, not "company", so browser autofill can't trip it.)
+  if ((data.hp_field || "").trim()) return json(200, { ok: true });
 
   const clean = {};
   for (const f of FIELDS) clean[f] = String(data[f] ?? "").trim().slice(0, 300);
