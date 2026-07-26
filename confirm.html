@@ -37,7 +37,7 @@ main{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:c
 .wordmark{width:clamp(150px,42vw,210px);height:auto;margin-bottom:7vh;opacity:0;animation:rise 1.2s var(--ease) .1s forwards}
 .stage{width:min(560px,100%);opacity:0;animation:rise 1.1s var(--ease) .35s forwards}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.fade{animation:fade .7s var(--ease)}
+.fade{opacity:1;animation:fade .7s var(--ease) forwards}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 .eyebrow{font-size:10px;letter-spacing:.5em;text-indent:.5em;text-transform:uppercase;color:var(--white-faint);margin-bottom:3vh}
