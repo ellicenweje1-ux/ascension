@@ -75,6 +75,23 @@ h1{font-weight:200;font-size:clamp(24px,5.5vw,34px);letter-spacing:.22em;text-in
 .ref{font-family:"Courier New",monospace;font-size:20px;letter-spacing:.28em;color:var(--white);margin-bottom:26px}
 .verify{font-size:12px;line-height:1.8;letter-spacing:.05em;color:var(--white-faint)}
 .tiny{margin-top:24px;font-size:12px;letter-spacing:.04em;color:var(--white-faint)}
+.ticket-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:26px}
+.tbtn{display:inline-block;padding:12px 22px;border:1px solid var(--hairline-strong);color:var(--white);font-size:10px;letter-spacing:.24em;text-transform:uppercase;text-decoration:none;background:none;cursor:pointer;transition:border-color .3s,background .3s,color .3s}
+.tbtn:hover{border-color:var(--white)}
+.tbtn.solid{background:var(--white);color:var(--black);border-color:var(--white);font-weight:500}
+
+@media print{
+  .atmos{display:none !important}
+  body{background:#fff !important}
+  main{padding:16px !important;display:block !important}
+  .wordmark{filter:invert(1);margin:0 auto 16px}
+  .eyebrow,.tiny,.ticket-actions{display:none !important}
+  .invite{background:#fff !important;border:1.5px solid #111 !important;box-shadow:none}
+  .invite .to,.ref-label,.verify,.invite .grid .drow .k{color:#666 !important}
+  .invite .ev,.ref,.invite .grid .drow .v{color:#111 !important}
+  .invite .grid{border-color:#ccc !important}
+  .invite .grid .drow{border-color:#ccc !important}
+}
 </style>
 </head>
 <body>
@@ -158,7 +175,24 @@ function renderInvitation(inv, justConfirmed) {
       <p class="ref">${esc(inv.ticket_ref)}</p>
       <p class="verify">Admission is by guest list verification.<br>This invitation is personal to you and non-transferable.</p>
     </div>
-    <p class="tiny">${justConfirmed ? "A copy has been sent to your email." : "We look forward to welcoming you."}</p>`;
+    <div class="ticket-actions">
+      ${inv.gcal ? `<a class="tbtn" href="${esc(inv.gcal)}" target="_blank" rel="noopener">Add to Google Calendar</a>` : ""}
+      ${inv.ics ? `<button class="tbtn" id="ics-btn">Add to Apple / Outlook</button>` : ""}
+      <button class="tbtn solid" id="save-btn">Save ticket</button>
+    </div>
+    <p class="tiny">${justConfirmed ? "A copy has also been sent to your email." : "We look forward to welcoming you."}</p>`;
+
+  const saveBtn = document.getElementById("save-btn");
+  if (saveBtn) saveBtn.addEventListener("click", () => window.print());
+  const icsBtn = document.getElementById("ics-btn");
+  if (icsBtn && inv.ics) icsBtn.addEventListener("click", () => {
+    const blob = new Blob([inv.ics], { type: "text/calendar" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ascension-invitation.ics";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
 }
 
 function renderDeclined() {

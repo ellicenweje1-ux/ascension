@@ -16,8 +16,31 @@ function arrivalText(s) {
   return [s.doors_open && `Doors open ${s.doors_open}`, s.last_entry && `Last entry ${s.last_entry}`].filter(Boolean).join("  ·  ");
 }
 
+function calendar(s) {
+  // needs date_iso (YYYY-MM-DD); times HH:MM optional
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date_iso || "")) return null;
+  const d = s.date_iso.replace(/-/g, "");
+  const t = (hm, fb) => (/^\d{2}:\d{2}$/.test(hm || "") ? hm.replace(":", "") + "00" : fb);
+  const start = t(s.doors_open, "190000");
+  const end = t(s.end_time, "235900");
+  const title = s.event_name || "A Night With Ascension";
+  const loc = [s.venue_name, s.venue_address].filter(Boolean).join(", ");
+  const gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${d}T${start}/${d}T${end}&location=${encodeURIComponent(loc)}`;
+  const ics = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ascension//Guest List//EN", "BEGIN:VEVENT",
+    `UID:${Date.now()}@ascension`,
+    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`,
+    `DTSTART;TZID=Europe/London:${d}T${start}`,
+    `DTEND;TZID=Europe/London:${d}T${end}`,
+    `SUMMARY:${title}`, `LOCATION:${loc.replace(/,/g, "\\,")}`,
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
+  return { gcal, ics };
+}
+
 function invitationPayload(entry, settings) {
   const g = entry.guest || {};
+  const cal = calendar(settings);
   return {
     guest_name: `${g.first_name || ""} ${g.surname || ""}`.trim(),
     event_name: settings.event_name || "A Night With Ascension",
@@ -27,6 +50,8 @@ function invitationPayload(entry, settings) {
     arrival: arrivalText(settings),
     ticket_ref: entry.ticket_ref || "",
     dress_code: "Contemporary Elegance",
+    gcal: cal ? cal.gcal : "",
+    ics: cal ? cal.ics : "",
   };
 }
 

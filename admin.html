@@ -203,15 +203,16 @@ td.door { white-space:nowrap; }
     <!-- communications centre -->
     <div class="card" id="comms-card">
       <button type="button" class="card-head" data-toggle="comms-card">
-        <span>Communications centre — reusable emails</span>
-        <b>Reminder · Cancellation · Waitlist · Announcement</b>
+        <span>Communications centre — edit &amp; send guest emails</span>
+        <b>Invitation · Reminder · Waitlist · more</b>
       </button>
       <div class="card-body">
         <div class="comms-tabs" id="comms-tabs"></div>
         <div class="field"><label>Subject</label><input id="tpl-subject"></div>
-        <div class="field"><label>Message — use {first_name}, {date}, {arrival}, {venue}</label><textarea id="tpl-body"></textarea></div>
+        <div class="field"><label>Message — use {first_name}, {event}, {date}, {arrival}, {venue}</label><textarea id="tpl-body"></textarea></div>
         <div class="actions">
-          <button type="button" class="btn" id="tpl-save">Save template</button>
+          <button type="button" class="btn btn-solid" id="tpl-save">Save template</button>
+          <button type="button" class="btn" id="tpl-preview">Preview</button>
           <span class="note" id="tpl-note"></span>
         </div>
         <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
@@ -262,6 +263,12 @@ td.door { white-space:nowrap; }
         <option value="">Everyone</option>
         <option value="in">Checked in</option>
         <option value="out">Not arrived</option>
+      </select>
+      <select id="sort" title="Sort">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="az">Name A–Z</option>
+        <option value="za">Name Z–A</option>
       </select>
     </div>
 
@@ -370,6 +377,13 @@ function render() {
     return [r.first_name, r.surname, r.email, r.instagram, r.occupation, r.heard_from, r.invited_by, r.phone, r.ticket_ref]
       .join(" ").toLowerCase().includes(q);
   });
+  const sort = $("sort").value;
+  const nm = (r) => `${r.first_name} ${r.surname}`.trim().toLowerCase();
+  rows.sort((a, b) =>
+    sort === "old" ? new Date(a.created_at) - new Date(b.created_at)
+    : sort === "az" ? nm(a).localeCompare(nm(b))
+    : sort === "za" ? nm(b).localeCompare(nm(a))
+    : new Date(b.created_at) - new Date(a.created_at));
   $("rows").innerHTML = rows.map((r) => `<tr>
     <td class="door">${r.checked_in_at
       ? `<button class="door-btn in" data-checkin="${esc(r.id)}" data-state="out" title="Tap to undo">✓ In</button><span class="door-time">${esc(fmtTime(r.checked_in_at))}</span>`
@@ -422,7 +436,7 @@ async function unlock(k, { silent } = {}) {
 }
 
 $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); $("gate-err").textContent = ""; unlock($("gate-pass").value); });
-["search","filter-source","filter-occ","filter-door","filter-status"].forEach((id) => $(id).addEventListener("input", render));
+["search","filter-source","filter-occ","filter-door","filter-status","sort"].forEach((id) => $(id).addEventListener("input", render));
 $("refresh-btn").addEventListener("click", () => unlock(key()));
 $("lock-btn").addEventListener("click", () => { sessionStorage.removeItem(KEY_STORE); location.reload(); });
 document.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", () => $(b.dataset.toggle).classList.toggle("open")));
@@ -497,11 +511,11 @@ $("event-save").addEventListener("click", async () => {
 });
 
 /* ---------- communications centre ---------- */
-let TEMPLATES = {}, curTpl = "reminder";
+let TEMPLATES = {}, curTpl = "invitation";
 async function loadTemplates() {
   try {
     TEMPLATES = (await apiGet("/.netlify/functions/templates")).templates || {};
-    const order = ["reminder","cancellation","waitlist","announcement","invitation"];
+    const order = ["invitation","reminder","waitlist","cancellation","announcement"];
     $("comms-tabs").innerHTML = order.filter((k) => TEMPLATES[k]).map((k) =>
       `<button type="button" class="comms-tab ${k===curTpl?"active":""}" data-tpl="${k}">${esc(TEMPLATES[k].name || k)}</button>`).join("");
     $("comms-tabs").querySelectorAll("[data-tpl]").forEach((b) => b.addEventListener("click", () => selectTpl(b.dataset.tpl)));
@@ -514,11 +528,21 @@ function selectTpl(k) {
   const t = TEMPLATES[k] || {};
   $("tpl-subject").value = t.subject || "";
   $("tpl-body").value = t.body || "";
-  const auto = !!t.auto;
-  $("tpl-subject").disabled = auto; $("tpl-body").disabled = auto;
-  $("tpl-save").disabled = auto; $("tpl-test").disabled = auto; $("tpl-send").disabled = auto;
-  $("tpl-note").textContent = auto ? "Sent automatically per guest when you Accept — not group-sendable." : "";
+  const lockSend = (k === "invitation"); // per-guest only; still editable + previewable + testable
+  $("tpl-send").disabled = lockSend;
+  $("tpl-note").textContent = lockSend
+    ? "This is the acceptance email — sent to each guest when you press Accept. Edit the wording, then Preview or send yourself a test. (It can't be group-sent because each guest gets a personal Confirm button.)"
+    : "";
 }
+$("tpl-preview").addEventListener("click", async () => {
+  $("tpl-note").textContent = "Opening preview…";
+  try {
+    const b = await apiPost("/.netlify/functions/broadcast", { key: curTpl, preview: true, subject: $("tpl-subject").value, body: $("tpl-body").value });
+    const w = window.open("", "_blank");
+    if (w) { w.document.open(); w.document.write(b.html); w.document.close(); $("tpl-note").textContent = ""; }
+    else $("tpl-note").textContent = "Allow pop-ups to see the preview, or use Send test.";
+  } catch (err) { $("tpl-note").textContent = err.message; }
+});
 $("tpl-save").addEventListener("click", async () => {
   $("tpl-save").disabled = true;
   try {
@@ -531,7 +555,7 @@ $("tpl-save").addEventListener("click", async () => {
 $("tpl-test").addEventListener("click", async () => {
   const to = $("tpl-test-to").value.trim(); if (!to) { $("send-note").textContent = "Enter a test address."; return; }
   $("tpl-test").disabled = true; $("send-note").textContent = "Sending test…";
-  try { await apiPost("/.netlify/functions/broadcast", { key: curTpl, test_to: to }); $("send-note").textContent = `Test sent to ${to}.`; }
+  try { await apiPost("/.netlify/functions/broadcast", { key: curTpl, test_to: to, subject: $("tpl-subject").value, body: $("tpl-body").value }); $("send-note").textContent = `Test sent to ${to}.`; }
   catch (err) { $("send-note").textContent = err.message; }
   $("tpl-test").disabled = false;
 });

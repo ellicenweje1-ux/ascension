@@ -115,6 +115,88 @@ export function label(text) {
   return `<p style="margin:0 0 16px;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(244,241,236,0.4);">${text}</p>`;
 }
 
+/* ---- editable email templates (Communications Centre) ---- */
+export const DEFAULTS = {
+  invitation: {
+    name: "Invitation (Acceptance)",
+    tokened: true, // sent per-guest on Accept; carries the Confirm Attendance button
+    subject: "You're invited | A Night With Ascension",
+    body: `Hi {first_name},
+
+Thank you for your application to Ascension. We're pleased to let you know that your application has been successful, and we'd like to invite you to join us for {event}.
+
+Date: {date}
+Venue: {venue}
+Arrival: {arrival}
+
+Dress code — Contemporary Elegance. Elevated eveningwear; luxury streetwear welcomed when thoughtfully styled.
+
+Photography and video take place throughout the evening; by attending you acknowledge that imagery may be used across Ascension's channels. Admission is reserved exclusively for the named guest and invitations cannot be transferred or shared.
+
+Your place has been reserved. Please confirm your attendance below — once confirmed, you'll receive your official digital invitation and unique ticket reference.`,
+  },
+  reminder: {
+    name: "Reminder",
+    subject: "A Night With Ascension — a few days to go",
+    body: "Hi {first_name},\n\nA note ahead of {event}.\n\nDate: {date}\nArrival: {arrival}\nVenue: {venue}\n\nDress code: Contemporary Elegance — elevated eveningwear.\n\nPlease arrive within your arrival window. We look forward to welcoming you.",
+  },
+  cancellation: {
+    name: "Cancellation",
+    subject: "A Night With Ascension — an update",
+    body: "Hi {first_name},\n\nWe're writing to let you know about a change to {event}.\n\n[Add your message here.]\n\nWith thanks,\nAscension",
+  },
+  waitlist: {
+    name: "Waitlist",
+    tokened: true, // also sent from the Waitlist action on a guest
+    subject: "Ascension — Priority Waitlist",
+    body: "Hi {first_name},\n\nThank you for your interest in Ascension and for taking the time to submit an application.\n\nDue to the level of interest in this event, we have now reached our current guest capacity. Rather than closing your application, we have placed you on our priority waitlist.\n\nShould additional places become available, or if confirmed guests are no longer able to attend, we will contact waitlisted applicants in the order that spaces become available.\n\nYour application will also remain active for future Ascension events, where priority consideration may be given to guests who have previously registered their interest.\n\nThank you for being part of the Ascension community.",
+  },
+  announcement: {
+    name: "General Announcement",
+    subject: "A note from Ascension",
+    body: "Hi {first_name},\n\n[Your announcement here.]\n\nAscension\nMusic · Discovery · Culture",
+  },
+};
+
+export async function loadTemplate(key) {
+  const def = DEFAULTS[key] || {};
+  let saved = {};
+  try { saved = (await stores.templates().get("map", { type: "json" })) || {}; } catch {}
+  const s = saved[key] || {};
+  return { subject: s.subject || def.subject || "", body: s.body || def.body || "", name: def.name || key };
+}
+
+export function fillVars(text, vars) {
+  let t = String(text || "");
+  for (const [k, v] of Object.entries(vars || {})) t = t.split(`{${k}}`).join(v == null ? "" : String(v));
+  return t;
+}
+export function proseParagraphs(text) {
+  return String(text || "").split(/\n{2,}/).filter((p) => p.trim()).map((p) =>
+    `<p style="margin:0 0 20px;font-size:15px;line-height:1.9;letter-spacing:0.02em;color:rgba(244,241,236,0.82);">${esc(p).replace(/\n/g, "<br>")}</p>`
+  ).join("");
+}
+export function proseEmail(url, text, vars) {
+  return shell(url, `<div style="border-top:1px solid rgba(244,241,236,0.14);padding-top:40px;">${proseParagraphs(fillVars(text, vars))}</div>`);
+}
+export function invitationEmailHtml(url, text, vars, confirmUrl, declineUrl) {
+  const inner = `<div style="border-top:1px solid rgba(244,241,236,0.14);padding-top:40px;">
+    ${proseParagraphs(fillVars(text, vars))}
+    <div style="text-align:center;padding:10px 0 6px;">${button("Confirm Attendance", confirmUrl)}</div>
+    <p style="margin:8px 0 6px;text-align:center;font-size:12px;letter-spacing:0.06em;color:rgba(244,241,236,0.5);">Unable to attend? <a href="${esc(declineUrl)}" style="color:rgba(244,241,236,0.85);">Let us know here.</a></p>
+  </div>`;
+  return shell(url, inner);
+}
+
+export function eventVars(settings) {
+  return {
+    event: settings.event_name || "A Night With Ascension",
+    date: settings.date_text || "",
+    venue: [settings.venue_name, settings.venue_address].filter(Boolean).join(", "),
+    arrival: [settings.doors_open && `Doors open ${settings.doors_open}`, settings.last_entry && `Last entry ${settings.last_entry}`].filter(Boolean).join(" · "),
+  };
+}
+
 /* ---- ticket reference: ANWA-<NN><DDMMYY> ---- */
 export function eventCode(settings) {
   // DDMMYY from date_iso (YYYY-MM-DD); falls back to blanks if unset
