@@ -50,6 +50,20 @@ header.top { display:flex; align-items:center; justify-content:space-between; ga
 .gate input:focus { border-color:var(--white); }
 .gate .err { min-height:18px; font-size:12.5px; color:rgba(232,196,188,.9); letter-spacing:.05em; }
 
+/* password modal */
+.modal-back { position:fixed; inset:0; background:rgba(6,6,6,0.82); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:flex-start; justify-content:center; padding:8vh 20px 20px; z-index:100; overflow:auto; }
+.modal-back[hidden] { display:none; }
+.modal { background:var(--ink); border:1px solid var(--hairline-strong); max-width:440px; width:100%; padding:34px 30px; position:relative; }
+.modal h2 { font-weight:300; letter-spacing:.18em; text-transform:uppercase; font-size:14px; margin-bottom:14px; }
+.modal-x { position:absolute; top:12px; right:16px; background:none; border:0; color:var(--white-dim); font-size:26px; line-height:1; cursor:pointer; }
+.modal-x:hover { color:var(--white); }
+.pw-status { font-size:13px; color:var(--white-dim); letter-spacing:.03em; line-height:1.6; }
+.pw-status.off { color:var(--s-wait); }
+.pw-section { border-top:1px solid var(--hairline); padding-top:18px; margin-top:18px; }
+.pw-section label { display:block; font-size:9px; letter-spacing:.26em; text-transform:uppercase; color:var(--white-faint); margin:0 0 6px; }
+.pw-section input { width:100%; background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:14px; padding:10px 12px; margin-bottom:12px; outline:none; border-radius:0; }
+.pw-section input:focus { border-color:var(--white); }
+
 .dash { display:none; }
 .dash.on { display:block; }
 .stats { display:flex; flex-wrap:wrap; gap:12px; margin:30px 0 8px; }
@@ -147,9 +161,36 @@ td.door { white-space:nowrap; }
     <div class="top-actions" id="top-actions" hidden>
       <button class="btn" id="refresh-btn">Refresh</button>
       <button class="btn" id="csv-btn">Download CSV</button>
+      <button class="btn" id="pw-btn">Password</button>
       <button class="btn" id="lock-btn">Lock</button>
     </div>
   </header>
+
+  <!-- password management modal -->
+  <div class="modal-back" id="pw-modal" hidden>
+    <div class="modal">
+      <button class="modal-x" id="pw-close" aria-label="Close">×</button>
+      <h2>Admin password</h2>
+      <p class="pw-status" id="pw-status">Checking…</p>
+
+      <div class="pw-section">
+        <button type="button" class="btn" id="pw-toggle">…</button>
+        <p class="note" id="pw-toggle-note" style="margin-top:10px;"></p>
+      </div>
+
+      <div class="pw-section">
+        <label>New password (min 6 characters)</label>
+        <input id="pw-new" type="password" autocomplete="new-password" placeholder="••••••••">
+        <label>Confirm new password</label>
+        <input id="pw-confirm" type="password" autocomplete="new-password" placeholder="••••••••">
+        <div class="actions">
+          <button type="button" class="btn btn-solid" id="pw-save">Change password</button>
+          <button type="button" class="btn" id="pw-reset">Reset to default</button>
+        </div>
+        <p class="note" id="pw-note" style="margin-top:10px;"></p>
+      </div>
+    </div>
+  </div>
 
   <!-- password gate -->
   <section class="gate" id="gate">
@@ -242,25 +283,6 @@ td.door { white-space:nowrap; }
             <button type="button" class="btn" id="reminder-now">Send event reminder now</button>
             <span class="note">Reminders also send automatically a few days before the event to ticketed guests.</span>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- security -->
-    <div class="card" id="security-card">
-      <button type="button" class="card-head" data-toggle="security-card">
-        <span>Security — admin password</span>
-        <b>Change or reset the password</b>
-      </button>
-      <div class="card-body">
-        <div class="grid">
-          <div><label>New password (min 6 characters)</label><input id="pw-new" type="password" autocomplete="new-password" placeholder="••••••••"></div>
-          <div><label>Confirm new password</label><input id="pw-confirm" type="password" autocomplete="new-password" placeholder="••••••••"></div>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn btn-solid" id="pw-save">Change password</button>
-          <button type="button" class="btn" id="pw-reset">Reset to default</button>
-          <span class="note" id="pw-note">A password always protects the guest list. “Reset to default” reverts to the original password set up for the site.</span>
         </div>
       </div>
     </div>
@@ -529,17 +551,63 @@ $("event-save").addEventListener("click", async () => {
   $("event-save").disabled = false;
 });
 
-/* ---------- security: change / reset password ---------- */
+/* ---------- security: password management (top-bar modal) ---------- */
+let PW_STATE = { enabled: true, can_enable: true };
+function paintPwStatus() {
+  const s = $("pw-status");
+  if (PW_STATE.enabled) {
+    s.className = "pw-status";
+    s.textContent = "The guest list is password-protected. Only someone with the password can open this page.";
+    $("pw-toggle").textContent = "Switch password off";
+    $("pw-toggle-note").textContent = "Turns the lock off so this page opens without a password. Anyone with the link will be able to see the guest list.";
+  } else {
+    s.className = "pw-status off";
+    s.textContent = "The password is OFF. This page opens for anyone with the link — no password needed.";
+    $("pw-toggle").textContent = "Switch password on";
+    $("pw-toggle-note").textContent = PW_STATE.can_enable
+      ? "Turns the lock back on using the current password."
+      : "Set a password below first, then it will be switched on.";
+  }
+}
+async function refreshPwStatus() {
+  try {
+    const res = await fetch("/.netlify/functions/password");
+    if (res.ok) PW_STATE = await res.json();
+  } catch (_) {}
+  paintPwStatus();
+}
+function openPwModal() { $("pw-note").textContent = ""; $("pw-toggle-note").textContent = ""; $("pw-modal").hidden = false; refreshPwStatus(); }
+function closePwModal() { $("pw-modal").hidden = true; }
+$("pw-btn").addEventListener("click", openPwModal);
+$("pw-close").addEventListener("click", closePwModal);
+$("pw-modal").addEventListener("click", (e) => { if (e.target === $("pw-modal")) closePwModal(); });
+
+$("pw-toggle").addEventListener("click", async () => {
+  const turningOff = PW_STATE.enabled;
+  if (turningOff && !confirm("Switch the password OFF? Anyone with the link will be able to open the guest list until you switch it back on.")) return;
+  if (!turningOff && !PW_STATE.can_enable) { $("pw-toggle-note").textContent = "Set a password below first."; return; }
+  $("pw-toggle").disabled = true;
+  try {
+    const b = await apiPost("/.netlify/functions/password", { action: turningOff ? "disable" : "enable" });
+    PW_STATE = { enabled: b.enabled, can_enable: b.can_enable, has_custom: b.has_custom };
+    paintPwStatus();
+    $("pw-note").textContent = turningOff ? "Password switched off." : "Password switched on.";
+  } catch (err) { $("pw-toggle-note").textContent = err.message; }
+  $("pw-toggle").disabled = false;
+});
+
 $("pw-save").addEventListener("click", async () => {
   const pw = $("pw-new").value, confirmPw = $("pw-confirm").value;
   if (pw.length < 6) { $("pw-note").textContent = "Password must be at least 6 characters."; return; }
   if (pw !== confirmPw) { $("pw-note").textContent = "The two passwords don't match."; return; }
   $("pw-save").disabled = true; $("pw-note").textContent = "Saving…";
   try {
-    await apiPost("/.netlify/functions/password", { action: "change", new_password: pw });
+    const b = await apiPost("/.netlify/functions/password", { action: "change", new_password: pw });
     sessionStorage.setItem(KEY_STORE, pw); // stay logged in with the new password
     $("pw-new").value = ""; $("pw-confirm").value = "";
-    $("pw-note").textContent = "Password changed. It's active now — use it next time you sign in.";
+    PW_STATE = { enabled: b.enabled, can_enable: b.can_enable, has_custom: b.has_custom };
+    paintPwStatus();
+    $("pw-note").textContent = "Password changed and switched on. Use it next time you sign in.";
   } catch (err) { $("pw-note").textContent = err.message; }
   $("pw-save").disabled = false;
 });
@@ -547,7 +615,9 @@ $("pw-reset").addEventListener("click", async () => {
   if (!confirm("Reset the password back to the original default set up for the site?")) return;
   $("pw-reset").disabled = true; $("pw-note").textContent = "Resetting…";
   try {
-    await apiPost("/.netlify/functions/password", { action: "reset" });
+    const b = await apiPost("/.netlify/functions/password", { action: "reset" });
+    PW_STATE = { enabled: b.enabled, can_enable: b.can_enable, has_custom: b.has_custom };
+    paintPwStatus();
     $("pw-note").textContent = "Reset to the default password. If you're using a different one now, sign out and back in with the default.";
   } catch (err) { $("pw-note").textContent = err.message; }
   $("pw-reset").disabled = false;
@@ -630,8 +700,20 @@ function focusFromHash() {
 }
 window.addEventListener("hashchange", focusFromHash);
 
-const saved = key();
-if (saved) unlock(saved, { silent: true });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("pw-modal").hidden) closePwModal(); });
+
+async function boot() {
+  let st = { enabled: true };
+  try {
+    const res = await fetch("/.netlify/functions/password");
+    if (res.ok) st = await res.json();
+  } catch (_) {}
+  PW_STATE = st;
+  if (!st.enabled) { await unlock("", { silent: true }); return; } // password off — open straight in
+  const saved = key();
+  if (saved) await unlock(saved, { silent: true });
+}
+boot();
 </script>
 </body>
 </html>

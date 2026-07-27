@@ -28,12 +28,28 @@ export async function hashPassword(pw, salt) {
 }
 
 // A custom password (stored hashed in Blobs) overrides the ADMIN_PASSWORD env var.
+// If the lock is switched off (stored.disabled), any request is accepted.
 export async function verifyPassword(supplied) {
   let stored = null;
   try { stored = await stores.auth().get("pw", { type: "json" }); } catch {}
+  if (stored && stored.disabled) return true; // password switched off — no lock
   if (stored && stored.hash) return (await hashPassword(supplied, stored.salt || "")) === stored.hash;
   const password = process.env.ADMIN_PASSWORD || "";
   return !!password && supplied === password;
+}
+
+// Whether the admin portal currently requires a password, and what's available.
+export async function passwordState() {
+  let stored = null;
+  try { stored = await stores.auth().get("pw", { type: "json" }); } catch {}
+  const hasCustom = !!(stored && stored.hash);
+  const hasEnv = !!process.env.ADMIN_PASSWORD;
+  const disabled = !!(stored && stored.disabled);
+  return {
+    enabled: !disabled && (hasCustom || hasEnv), // is a lock in force right now?
+    can_enable: hasCustom || hasEnv,             // is there a password to turn back on?
+    has_custom: hasCustom,
+  };
 }
 
 export async function checkAdmin(req) {
