@@ -6,7 +6,7 @@
 import { checkAdmin, json, listApplications, getStatuses, stores } from "./lib/shared.mjs";
 
 export default async (req) => {
-  const auth = checkAdmin(req);
+  const auth = await checkAdmin(req);
   if (!auth.ok) return auth.res;
 
   const apps = await listApplications();

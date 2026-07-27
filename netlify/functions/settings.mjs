@@ -4,22 +4,16 @@
  * Auth: x-admin-key header = ADMIN_PASSWORD. Stored in Netlify Blobs.
  */
 import { getStore } from "@netlify/blobs";
+import { checkAdmin, json } from "./lib/shared.mjs";
 
 const FIELDS = [
   "event_name", "date_text", "date_iso", "doors_open", "last_entry",
   "end_time", "venue_name", "venue_address", "maps_url", "spotify_url",
 ];
 
-const json = (status, body) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json", "cache-control": "no-store" },
-  });
-
 export default async (req) => {
-  const supplied = req.headers.get("x-admin-key") || "";
-  const password = process.env.ADMIN_PASSWORD || "";
-  if (!password || supplied !== password) return json(401, { error: "Incorrect password." });
+  const auth = await checkAdmin(req);
+  if (!auth.ok) return auth.res;
 
   const store = getStore("settings");
   if (req.method === "GET") {

@@ -20,7 +20,7 @@ function renderFor(key, url, body, vars, confirmUrl, declineUrl) {
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "POST only." });
-  const auth = checkAdmin(req);
+  const auth = await checkAdmin(req);
   if (!auth.ok) return auth.res;
 
   let body = {};

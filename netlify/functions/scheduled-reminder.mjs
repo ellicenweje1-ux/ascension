@@ -7,7 +7,7 @@
  */
 import {
   json, esc, siteUrl, fromAddress, shell, para, label,
-  getSettings, getStatuses, listApplications, stores,
+  getSettings, getStatuses, listApplications, stores, verifyPassword,
 } from "./lib/shared.mjs";
 
 const LEAD_DAYS = Number(process.env.REMINDER_LEAD_DAYS || 3);
@@ -72,7 +72,7 @@ export default async (req) => {
   if (req && req.headers && req.headers.get) {
     const key = req.headers.get("x-admin-key");
     if (key) {
-      if (key !== (process.env.ADMIN_PASSWORD || "")) return json(401, { error: "Incorrect password." });
+      if (!(await verifyPassword(key))) return json(401, { error: "Incorrect password." });
       let b = {};
       try { b = await req.json(); } catch (_) {}
       const r = await runReminders(siteUrl(req), !!b.force);

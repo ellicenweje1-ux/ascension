@@ -17,7 +17,7 @@
 <style>
 :root {
   --black:#060606; --ink:#0e0e0e; --white:#f4f1ec;
-  --white-dim:rgba(244,241,236,0.62); --white-faint:rgba(244,241,236,0.38);
+  --white-dim:rgba(244,241,236,0.90); --white-faint:rgba(244,241,236,0.64);
   --hairline:rgba(244,241,236,0.14); --hairline-strong:rgba(244,241,236,0.32);
   --sans:"Jost","Futura",system-ui,sans-serif;
   --s-invited:#9db4cc; --s-confirmed:#9ec4a6; --s-issued:#c7ad84;
@@ -242,6 +242,25 @@ td.door { white-space:nowrap; }
             <button type="button" class="btn" id="reminder-now">Send event reminder now</button>
             <span class="note">Reminders also send automatically a few days before the event to ticketed guests.</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- security -->
+    <div class="card" id="security-card">
+      <button type="button" class="card-head" data-toggle="security-card">
+        <span>Security — admin password</span>
+        <b>Change or reset the password</b>
+      </button>
+      <div class="card-body">
+        <div class="grid">
+          <div><label>New password (min 6 characters)</label><input id="pw-new" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+          <div><label>Confirm new password</label><input id="pw-confirm" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-solid" id="pw-save">Change password</button>
+          <button type="button" class="btn" id="pw-reset">Reset to default</button>
+          <span class="note" id="pw-note">A password always protects the guest list. “Reset to default” reverts to the original password set up for the site.</span>
         </div>
       </div>
     </div>
@@ -508,6 +527,30 @@ $("event-save").addEventListener("click", async () => {
   try { const b = await apiPost("/.netlify/functions/settings", s); summariseSettings(b.settings || s); $("event-note").textContent = "Saved."; }
   catch (err) { $("event-note").textContent = err.message; }
   $("event-save").disabled = false;
+});
+
+/* ---------- security: change / reset password ---------- */
+$("pw-save").addEventListener("click", async () => {
+  const pw = $("pw-new").value, confirmPw = $("pw-confirm").value;
+  if (pw.length < 6) { $("pw-note").textContent = "Password must be at least 6 characters."; return; }
+  if (pw !== confirmPw) { $("pw-note").textContent = "The two passwords don't match."; return; }
+  $("pw-save").disabled = true; $("pw-note").textContent = "Saving…";
+  try {
+    await apiPost("/.netlify/functions/password", { action: "change", new_password: pw });
+    sessionStorage.setItem(KEY_STORE, pw); // stay logged in with the new password
+    $("pw-new").value = ""; $("pw-confirm").value = "";
+    $("pw-note").textContent = "Password changed. It's active now — use it next time you sign in.";
+  } catch (err) { $("pw-note").textContent = err.message; }
+  $("pw-save").disabled = false;
+});
+$("pw-reset").addEventListener("click", async () => {
+  if (!confirm("Reset the password back to the original default set up for the site?")) return;
+  $("pw-reset").disabled = true; $("pw-note").textContent = "Resetting…";
+  try {
+    await apiPost("/.netlify/functions/password", { action: "reset" });
+    $("pw-note").textContent = "Reset to the default password. If you're using a different one now, sign out and back in with the default.";
+  } catch (err) { $("pw-note").textContent = err.message; }
+  $("pw-reset").disabled = false;
 });
 
 /* ---------- communications centre ---------- */

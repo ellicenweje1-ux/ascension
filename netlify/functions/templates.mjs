@@ -7,7 +7,7 @@
 import { checkAdmin, json, stores, DEFAULTS } from "./lib/shared.mjs";
 
 export default async (req) => {
-  const auth = checkAdmin(req);
+  const auth = await checkAdmin(req);
   if (!auth.ok) return auth.res;
   const store = stores.templates();
 

@@ -21,12 +21,25 @@ export function siteUrl(req) {
   return process.env.URL || "https://ascensionldn.co.uk";
 }
 
-export function checkAdmin(req) {
-  const supplied = req.headers.get("x-admin-key") || "";
+export async function hashPassword(pw, salt) {
+  const data = new TextEncoder().encode(`${salt}:${pw}`);
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// A custom password (stored hashed in Blobs) overrides the ADMIN_PASSWORD env var.
+export async function verifyPassword(supplied) {
+  let stored = null;
+  try { stored = await stores.auth().get("pw", { type: "json" }); } catch {}
+  if (stored && stored.hash) return (await hashPassword(supplied, stored.salt || "")) === stored.hash;
   const password = process.env.ADMIN_PASSWORD || "";
-  if (!password) return { ok: false, res: json(500, { error: "ADMIN_PASSWORD is not set on the site." }) };
-  if (supplied !== password) return { ok: false, res: json(401, { error: "Incorrect password." }) };
-  return { ok: true };
+  return !!password && supplied === password;
+}
+
+export async function checkAdmin(req) {
+  const supplied = req.headers.get("x-admin-key") || "";
+  if (await verifyPassword(supplied)) return { ok: true };
+  return { ok: false, res: json(401, { error: "Incorrect password." }) };
 }
 
 export function randToken(n = 20) {
@@ -46,6 +59,7 @@ export const stores = {
   templates: () => getStore("templates"),
   sequence: () => getStore("sequence"),
   flags: () => getStore("flags"),
+  auth: () => getStore("auth"),
 };
 
 export async function getSettings() {
