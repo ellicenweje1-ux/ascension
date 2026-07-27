@@ -12,3 +12,24 @@
   node_bundler = "esbuild"
 
 # The scheduled reminder's cadence is declared inside the function itself.
+
+# Always serve the app pages fresh so updates show without a hard refresh.
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+
+[[headers]]
+  for = "/confirm.html"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
