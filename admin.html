@@ -142,6 +142,25 @@ td.door { white-space:nowrap; }
 .comms-tab { font-size:10px; letter-spacing:.2em; text-transform:uppercase; border:1px solid var(--hairline); padding:8px 14px; color:var(--white-dim); }
 .comms-tab.active { border-color:var(--white); color:var(--white); }
 
+/* feedback form builder + results */
+.fb-q { border:1px solid var(--hairline); padding:14px; margin-bottom:12px; }
+.fb-q-top { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+.fb-q-top .fb-type { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--white-faint); border:1px solid var(--hairline); padding:4px 8px; white-space:nowrap; }
+.fb-q input, .fb-q textarea { width:100%; background:transparent; border:1px solid var(--hairline); color:var(--white); font-family:var(--sans); font-size:13px; padding:8px 10px; outline:none; }
+.fb-q input:focus, .fb-q textarea:focus { border-color:var(--white); }
+.fb-q .fb-lbl { font-size:9px; letter-spacing:.24em; text-transform:uppercase; color:var(--white-faint); margin:8px 0 5px; display:block; }
+.fb-del { flex:0 0 auto; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--white-faint); border:1px solid var(--hairline); padding:5px 9px; }
+.fb-del:hover { border-color:var(--s-declined); color:var(--s-declined); }
+.fb-res { margin-bottom:20px; }
+.fb-res .fb-res-q { font-size:13px; color:var(--white); margin-bottom:10px; letter-spacing:.02em; }
+.fb-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.fb-row .fb-opt-lbl { flex:0 0 42%; font-size:12px; color:var(--white-dim); }
+.fb-track { flex:1; height:8px; background:rgba(244,241,236,.08); position:relative; }
+.fb-fill { position:absolute; left:0; top:0; bottom:0; background:var(--s-issued); }
+.fb-row .fb-n { flex:0 0 60px; text-align:right; font-size:11px; color:var(--white-faint); font-variant-numeric:tabular-nums; }
+.fb-texts { border-left:2px solid var(--hairline); padding-left:12px; }
+.fb-texts p { font-size:12.5px; color:var(--white-dim); line-height:1.6; margin-bottom:8px; }
+
 .empty { padding:60px 20px; text-align:center; color:var(--white-faint); font-size:14px; letter-spacing:.08em; }
 .foot { margin-top:16px; font-size:11.5px; color:var(--white-faint); letter-spacing:.05em; }
 .legend { display:flex; flex-wrap:wrap; gap:10px 18px; margin:14px 0 0; }
@@ -261,7 +280,7 @@ td.door { white-space:nowrap; }
             <div class="field"><label>Send a test to</label><input id="tpl-test-to" type="email" placeholder="you@example.com"></div>
             <button type="button" class="btn" id="tpl-test">Send test</button>
           </div>
-          <div class="row" style="margin-top:14px;">
+          <div class="row" style="margin-top:14px;" id="group-send-row">
             <div class="field"><label>Send to group</label>
               <select id="tpl-group">
                 <option value="optin">Everyone opted-in to updates</option>
@@ -278,10 +297,61 @@ td.door { white-space:nowrap; }
           </div>
           <p class="note" id="send-note" style="margin-top:12px;"></p>
         </div>
-        <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+        <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;" id="reminder-block">
           <div class="actions">
             <button type="button" class="btn" id="reminder-now">Send event reminder now</button>
             <span class="note">Reminders also send automatically a few days before the event to ticketed guests.</span>
+          </div>
+        </div>
+
+        <!-- On-the-day sign-ups panel (shown on the "On-the-day sign-ups" tab) -->
+        <div id="onday-extra" hidden style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+          <div class="field"><label>Sign-up cutoff — this email targets everyone who applied on or after this moment</label>
+            <input id="onday-cutoff" type="datetime-local"></div>
+          <div class="actions" style="margin-top:12px;">
+            <button type="button" class="btn" id="onday-save-cutoff">Save cutoff</button>
+            <button type="button" class="btn btn-solid" id="onday-send">Send to on-the-day sign-ups</button>
+            <span class="note" id="onday-note"></span>
+          </div>
+        </div>
+
+        <!-- Feedback panel (shown on the "Feedback request" tab) -->
+        <div id="feedback-extra" hidden style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+          <p class="note" style="margin-bottom:14px;">This email carries a personal feedback link and is sent to everyone you <b>checked in on the day</b>.</p>
+
+          <div class="fb-builder">
+            <div class="card-head" style="padding:0 0 12px;"><span>Feedback form</span></div>
+            <div class="field"><label>Intro shown at the top of the form</label><textarea id="fb-intro" style="min-height:60px;"></textarea></div>
+            <div id="fb-questions"></div>
+            <div class="actions" style="margin-top:6px;">
+              <button type="button" class="btn" id="fb-add-single">+ Multiple choice (pick one)</button>
+              <button type="button" class="btn" id="fb-add-multi">+ Checkboxes (pick many)</button>
+              <button type="button" class="btn" id="fb-add-text">+ Comment box</button>
+            </div>
+            <div class="actions" style="margin-top:14px;">
+              <button type="button" class="btn btn-solid" id="fb-save-form">Save form</button>
+              <button type="button" class="btn" id="fb-preview">Preview form</button>
+              <span class="note" id="fb-form-note"></span>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+            <div class="field"><label>Send-out time — the earliest you plan to send this (after the event)</label>
+              <input id="fb-sendafter" type="datetime-local"></div>
+            <div class="actions" style="margin-top:12px;">
+              <button type="button" class="btn" id="fb-save-sendafter">Save time</button>
+              <button type="button" class="btn btn-solid" id="fb-send">Send feedback form to checked-in guests</button>
+              <span class="note" id="fb-send-note"></span>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--hairline);margin:22px 0 0;padding-top:22px;">
+            <div class="card-head" style="padding:0 0 12px;"><span>Results</span><b id="fb-count">0 responses</b></div>
+            <div id="fb-results"></div>
+            <div class="actions" style="margin-top:14px;">
+              <button type="button" class="btn" id="fb-refresh">Refresh results</button>
+              <button type="button" class="btn" id="fb-csv">Download responses (CSV)</button>
+            </div>
           </div>
         </div>
       </div>
@@ -532,21 +602,30 @@ $("csv-btn").addEventListener("click", () => {
 
 /* ---------- event settings ---------- */
 const EV_FIELDS = ["event_name","date_text","date_iso","doors_open","last_entry","end_time","venue_name","venue_address","maps_url","spotify_url"];
+let SETTINGS = {}; // full settings object (incl. late_signup_cutoff, feedback_send_after)
 function summariseSettings(s) {
   const bits = [s.date_text, s.venue_name].filter(Boolean);
   $("event-summary").textContent = bits.length ? bits.join(" · ") : "Not set — tap to fill in";
 }
 async function loadSettings() {
   try {
-    const s = (await apiGet("/.netlify/functions/settings")).settings || {};
-    for (const f of EV_FIELDS) $("ev-" + f).value = s[f] || "";
-    summariseSettings(s);
+    SETTINGS = (await apiGet("/.netlify/functions/settings")).settings || {};
+    for (const f of EV_FIELDS) $("ev-" + f).value = SETTINGS[f] || "";
+    if ($("onday-cutoff")) $("onday-cutoff").value = SETTINGS.late_signup_cutoff || "";
+    if ($("fb-sendafter")) $("fb-sendafter").value = SETTINGS.feedback_send_after || "";
+    summariseSettings(SETTINGS);
   } catch (_) {}
 }
+// Save the full settings object with a patch merged in (a partial POST would blank other fields).
+async function persistSettings(patch) {
+  const b = await apiPost("/.netlify/functions/settings", { ...SETTINGS, ...patch });
+  SETTINGS = b.settings || { ...SETTINGS, ...patch };
+  return SETTINGS;
+}
 $("event-save").addEventListener("click", async () => {
-  const s = {}; for (const f of EV_FIELDS) s[f] = $("ev-" + f).value.trim();
+  const patch = {}; for (const f of EV_FIELDS) patch[f] = $("ev-" + f).value.trim();
   $("event-save").disabled = true;
-  try { const b = await apiPost("/.netlify/functions/settings", s); summariseSettings(b.settings || s); $("event-note").textContent = "Saved."; }
+  try { await persistSettings(patch); summariseSettings(SETTINGS); $("event-note").textContent = "Saved."; }
   catch (err) { $("event-note").textContent = err.message; }
   $("event-save").disabled = false;
 });
@@ -628,7 +707,7 @@ let TEMPLATES = {}, curTpl = "invitation";
 async function loadTemplates() {
   try {
     TEMPLATES = (await apiGet("/.netlify/functions/templates")).templates || {};
-    const order = ["invitation","reminder","waitlist","cancellation","announcement"];
+    const order = ["invitation","reminder","onday","feedback","waitlist","cancellation","announcement"];
     $("comms-tabs").innerHTML = order.filter((k) => TEMPLATES[k]).map((k) =>
       `<button type="button" class="comms-tab ${k===curTpl?"active":""}" data-tpl="${k}">${esc(TEMPLATES[k].name || k)}</button>`).join("");
     $("comms-tabs").querySelectorAll("[data-tpl]").forEach((b) => b.addEventListener("click", () => selectTpl(b.dataset.tpl)));
@@ -641,10 +720,23 @@ function selectTpl(k) {
   const t = TEMPLATES[k] || {};
   $("tpl-subject").value = t.subject || "";
   $("tpl-body").value = t.body || "";
-  const lockSend = (k === "invitation"); // per-guest only; still editable + previewable + testable
+
+  // These two tabs have their own dedicated send controls below, so hide the generic group-send row.
+  const dedicated = (k === "onday" || k === "feedback");
+  $("group-send-row").style.display = dedicated ? "none" : ""; // .row sets display:flex, so the hidden attr won't stick
+  $("onday-extra").hidden = (k !== "onday");
+  $("feedback-extra").hidden = (k !== "feedback");
+  if ($("reminder-block")) $("reminder-block").hidden = (k !== "reminder");
+
+  if (k === "onday" && $("onday-cutoff")) $("onday-cutoff").value = SETTINGS.late_signup_cutoff || "";
+  if (k === "feedback") loadFeedback();
+
+  const lockSend = (k === "invitation" || dedicated);
   $("tpl-send").disabled = lockSend;
-  $("tpl-note").textContent = lockSend
-    ? "This is the acceptance email — sent to each guest when you press Accept. Edit the wording, then Preview or send yourself a test. (It can't be group-sent because each guest gets a personal Confirm button.)"
+  $("tpl-note").textContent =
+    k === "invitation" ? "This is the acceptance email — sent to each guest when you press Accept. Edit the wording, then Preview or send yourself a test. (It can't be group-sent because each guest gets a personal Confirm button.)"
+    : k === "onday" ? "Edit the wording above, then use the sign-up cutoff and the send button below."
+    : k === "feedback" ? "Edit the wording above; build the form and send it to your checked-in guests below."
     : "";
 }
 $("tpl-preview").addEventListener("click", async () => {
@@ -688,6 +780,148 @@ $("reminder-now").addEventListener("click", async () => {
   try { const b = await apiPost("/.netlify/functions/broadcast", { key: "reminder", group: "issued" }); $("send-note").textContent = `Reminder sent to ${b.sent} of ${b.total || b.sent} ticketed guest(s).`; }
   catch (err) { $("send-note").textContent = err.message; }
   $("reminder-now").disabled = false;
+});
+
+/* ---------- on-the-day sign-ups ---------- */
+function countLate() {
+  const cut = Date.parse($("onday-cutoff").value || SETTINGS.late_signup_cutoff || "");
+  if (isNaN(cut)) return null;
+  return DATA.filter((r) => Date.parse(r.created_at || "") >= cut).length;
+}
+$("onday-save-cutoff").addEventListener("click", async () => {
+  $("onday-save-cutoff").disabled = true; $("onday-note").textContent = "Saving…";
+  try {
+    await persistSettings({ late_signup_cutoff: $("onday-cutoff").value });
+    const n = countLate();
+    $("onday-note").textContent = n == null ? "Saved." : `Saved. ${n} sign-up(s) fall on or after this time.`;
+  } catch (err) { $("onday-note").textContent = err.message; }
+  $("onday-save-cutoff").disabled = false;
+});
+$("onday-send").addEventListener("click", async () => {
+  if (!$("onday-cutoff").value) { $("onday-note").textContent = "Set and save the sign-up cutoff first."; return; }
+  if (SETTINGS.late_signup_cutoff !== $("onday-cutoff").value) { await persistSettings({ late_signup_cutoff: $("onday-cutoff").value }); }
+  const n = countLate();
+  if (!confirm(`Send the "On-the-day sign-ups" email to ${n == null ? "the" : n} sign-up(s) from ${$("onday-cutoff").value.replace("T", " ")} onward?`)) return;
+  $("onday-send").disabled = true; $("onday-note").textContent = "Sending…";
+  try { const b = await apiPost("/.netlify/functions/broadcast", { key: "onday", group: "late" }); $("onday-note").textContent = `Sent to ${b.sent} of ${b.total || b.sent} sign-up(s).${b.note ? " " + b.note : ""}`; }
+  catch (err) { $("onday-note").textContent = err.message; }
+  $("onday-send").disabled = false;
+});
+
+/* ---------- feedback form builder + results ---------- */
+let FB_FORM = { intro: "", questions: [] };
+let FB_RESPONSES = [];
+const uid = () => "q_" + Math.random().toString(36).slice(2, 8);
+
+async function loadFeedback() {
+  try {
+    const b = await apiGet("/.netlify/functions/feedback-form");
+    FB_FORM = b.form || { intro: "", questions: [] };
+    FB_RESPONSES = b.responses || [];
+    $("fb-intro").value = FB_FORM.intro || "";
+    if ($("fb-sendafter")) $("fb-sendafter").value = SETTINGS.feedback_send_after || "";
+    renderFbQuestions();
+    renderFbResults();
+  } catch (err) { $("fb-form-note").textContent = err.message; }
+}
+function renderFbQuestions() {
+  const typeLabel = { single: "Pick one", multi: "Pick many", text: "Comment" };
+  $("fb-questions").innerHTML = (FB_FORM.questions || []).map((q, i) => `
+    <div class="fb-q" data-i="${i}">
+      <div class="fb-q-top">
+        <span class="fb-type">${typeLabel[q.type] || q.type}</span>
+        <input class="fb-qtext" data-i="${i}" value="${esc(q.q || "")}" placeholder="Question">
+        <button type="button" class="fb-del" data-i="${i}">Remove</button>
+      </div>
+      ${q.type === "text" ? "" : `<label class="fb-lbl">Options (one per line)</label>
+        <textarea class="fb-qopts" data-i="${i}" style="min-height:70px;">${esc((q.options || []).join("\n"))}</textarea>`}
+    </div>`).join("") || '<p class="note">No questions yet — add one below.</p>';
+  $("fb-questions").querySelectorAll(".fb-del").forEach((b) => b.addEventListener("click", () => { FB_FORM.questions.splice(+b.dataset.i, 1); readFbInputs(); renderFbQuestions(); }));
+}
+function readFbInputs() {
+  // pull current field values back into FB_FORM before re-render
+  FB_FORM.intro = $("fb-intro").value;
+  $("fb-questions").querySelectorAll(".fb-qtext").forEach((el) => { const q = FB_FORM.questions[+el.dataset.i]; if (q) q.q = el.value; });
+  $("fb-questions").querySelectorAll(".fb-qopts").forEach((el) => { const q = FB_FORM.questions[+el.dataset.i]; if (q) q.options = el.value.split("\n").map((s) => s.trim()).filter(Boolean); });
+}
+function addFbQuestion(type) {
+  readFbInputs();
+  FB_FORM.questions.push(type === "text" ? { id: uid(), q: "", type } : { id: uid(), q: "", type, options: ["Option 1", "Option 2"] });
+  renderFbQuestions();
+}
+$("fb-add-single").addEventListener("click", () => addFbQuestion("single"));
+$("fb-add-multi").addEventListener("click", () => addFbQuestion("multi"));
+$("fb-add-text").addEventListener("click", () => addFbQuestion("text"));
+$("fb-save-form").addEventListener("click", async () => {
+  readFbInputs();
+  $("fb-save-form").disabled = true; $("fb-form-note").textContent = "Saving…";
+  try { const b = await apiPost("/.netlify/functions/feedback-form", FB_FORM); FB_FORM = b.form || FB_FORM; renderFbQuestions(); $("fb-form-note").textContent = "Form saved."; }
+  catch (err) { $("fb-form-note").textContent = err.message; }
+  $("fb-save-form").disabled = false;
+});
+$("fb-preview").addEventListener("click", async () => {
+  readFbInputs();
+  const w = window.open("about:blank", "_blank"); // open synchronously so the pop-up isn't blocked
+  $("fb-form-note").textContent = "Saving & opening preview…";
+  try {
+    await apiPost("/.netlify/functions/feedback-form", FB_FORM);
+    $("fb-form-note").textContent = "";
+    if (w) w.location = "/feedback.html?preview=1"; else $("fb-form-note").textContent = "Allow pop-ups to preview.";
+  } catch (err) { if (w) w.close(); $("fb-form-note").textContent = err.message; }
+});
+$("fb-save-sendafter").addEventListener("click", async () => {
+  $("fb-save-sendafter").disabled = true; $("fb-send-note").textContent = "Saving…";
+  try { await persistSettings({ feedback_send_after: $("fb-sendafter").value }); $("fb-send-note").textContent = "Saved."; }
+  catch (err) { $("fb-send-note").textContent = err.message; }
+  $("fb-save-sendafter").disabled = false;
+});
+$("fb-send").addEventListener("click", async () => {
+  const n = DATA.filter((r) => r.checked_in_at).length;
+  const after = $("fb-sendafter").value;
+  if (after && Date.now() < Date.parse(after) && !confirm(`Your send-out time (${after.replace("T", " ")}) hasn't arrived yet. Send now anyway?`)) return;
+  if (!confirm(`Send the feedback form to all ${n} checked-in guest(s)?`)) return;
+  $("fb-send").disabled = true; $("fb-send-note").textContent = "Sending…";
+  try { const b = await apiPost("/.netlify/functions/broadcast", { key: "feedback" }); $("fb-send-note").textContent = `Sent to ${b.sent} of ${b.total || b.sent} checked-in guest(s).${b.note ? " " + b.note : ""}`; }
+  catch (err) { $("fb-send-note").textContent = err.message; }
+  $("fb-send").disabled = false;
+});
+$("fb-refresh").addEventListener("click", loadFeedback);
+function renderFbResults() {
+  $("fb-count").textContent = `${FB_RESPONSES.length} response${FB_RESPONSES.length === 1 ? "" : "s"}`;
+  const html = (FB_FORM.questions || []).map((q) => {
+    if (q.type === "text") {
+      const texts = FB_RESPONSES.map((r) => r.answers && r.answers[q.id]).filter(Boolean);
+      return `<div class="fb-res"><div class="fb-res-q">${esc(q.q)}</div>${
+        texts.length ? `<div class="fb-texts">${texts.map((t) => `<p>${esc(t)}</p>`).join("")}</div>` : '<p class="note">No comments yet.</p>'}</div>`;
+    }
+    const counts = {}; (q.options || []).forEach((o) => (counts[o] = 0));
+    let total = 0;
+    for (const r of FB_RESPONSES) {
+      let v = r.answers && r.answers[q.id]; if (v == null) continue;
+      (Array.isArray(v) ? v : [v]).forEach((x) => { if (x in counts) counts[x]++; total++; });
+    }
+    const rows = (q.options || []).map((o) => {
+      const c = counts[o], pct = total ? Math.round((c / total) * 100) : 0;
+      return `<div class="fb-row"><span class="fb-opt-lbl">${esc(o)}</span>
+        <span class="fb-track"><span class="fb-fill" style="width:${pct}%"></span></span>
+        <span class="fb-n">${c} · ${pct}%</span></div>`;
+    }).join("");
+    return `<div class="fb-res"><div class="fb-res-q">${esc(q.q)}</div>${rows}</div>`;
+  }).join("");
+  $("fb-results").innerHTML = html || '<p class="note">Save a form to see results here.</p>';
+}
+$("fb-csv").addEventListener("click", () => {
+  const qids = (FB_FORM.questions || []).map((q) => q.id);
+  const head = ["name", "submitted_at", ...(FB_FORM.questions || []).map((q) => q.q)];
+  const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [head.map(cell).join(",")];
+  for (const r of FB_RESPONSES) {
+    const row = [r.name, r.at, ...qids.map((id) => { const a = r.answers && r.answers[id]; return Array.isArray(a) ? a.join("; ") : (a || ""); })];
+    lines.push(row.map(cell).join(","));
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv" }));
+  a.download = "ascension-feedback.csv"; a.click(); URL.revokeObjectURL(a.href);
 });
 
 /* ---------- deep link ---------- */

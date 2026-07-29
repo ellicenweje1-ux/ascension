@@ -25,6 +25,11 @@
     Cache-Control = "no-store, max-age=0"
 
 [[headers]]
+  for = "/feedback.html"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+
+[[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"

@@ -9,6 +9,7 @@ import { checkAdmin, json } from "./lib/shared.mjs";
 const FIELDS = [
   "event_name", "date_text", "date_iso", "doors_open", "last_entry",
   "end_time", "venue_name", "venue_address", "maps_url", "spotify_url",
+  "late_signup_cutoff", "feedback_send_after",
 ];
 
 export default async (req) => {

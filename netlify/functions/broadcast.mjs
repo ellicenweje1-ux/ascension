@@ -9,12 +9,29 @@
  * per-guest Confirm link, which the Accept action handles).
  */
 import {
-  checkAdmin, json, siteUrl, fromAddress, getSettings, getStatuses, listApplications,
-  loadTemplate, DEFAULTS, proseEmail, invitationEmailHtml, eventVars,
+  checkAdmin, json, siteUrl, fromAddress, getSettings, getStatuses, getStatus, saveStatus,
+  listApplications, loadTemplate, DEFAULTS, proseEmail, invitationEmailHtml, buttonEmail,
+  eventVars, stores, randToken,
 } from "./lib/shared.mjs";
+
+async function sendBatches(from, messages) {
+  let sent = 0;
+  for (let i = 0; i < messages.length; i += 100) {
+    const chunk = messages.slice(i, i + 100);
+    const res = await fetch("https://api.resend.com/emails/batch", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (compatible; AscensionSite/1.0)" },
+      body: JSON.stringify(chunk),
+    });
+    if (res.ok) sent += chunk.length;
+    else console.error("batch send failed", res.status, await res.text().catch(() => ""));
+  }
+  return sent;
+}
 
 function renderFor(key, url, body, vars, confirmUrl, declineUrl) {
   if (key === "invitation") return invitationEmailHtml(url, body, vars, confirmUrl || "#", declineUrl || "#");
+  if (key === "feedback") return buttonEmail(url, body, vars, "Share your feedback", confirmUrl || "#");
   return proseEmail(url, body, vars);
 }
 
@@ -61,36 +78,47 @@ export default async (req) => {
     return json(res.ok ? 200 : 502, res.ok ? { ok: true, test: true } : { error: `Test send failed (${res.status}).` });
   }
 
-  // group send — invitation is per-guest only
-  if (DEFAULTS[key].tokened && key === "invitation") {
+  // invitation is per-guest only (sent via the Accept button)
+  if (key === "invitation") {
     return json(422, { error: "The invitation is sent per guest via the Accept button — it can't be group-sent." });
   }
 
+  // Feedback — personal link per guest, to everyone we CHECKED IN on the day.
+  if (key === "feedback") {
+    const apps = await listApplications();
+    const checkins = (await stores.checkins().get("map", { type: "json" })) || {};
+    const recipients = apps.filter((a) => a.email && checkins[a.id]);
+    if (!recipients.length) return json(200, { ok: true, sent: 0, note: "No checked-in guests yet." });
+    const messages = [];
+    for (const a of recipients) {
+      let st = (await getStatus(a.id)) || {};
+      if (!st.token) { st = { ...st, token: randToken() }; await saveStatus(a.id, st); }
+      const link = `${url}/feedback.html?id=${encodeURIComponent(a.id)}&t=${st.token}`;
+      messages.push({ from, to: [a.email], subject, html: buttonEmail(url, rawBody, { first_name: a.first_name || "there", ...evars }, "Share your feedback", link) });
+    }
+    const sent = await sendBatches(from, messages);
+    return json(200, { ok: true, sent, total: recipients.length });
+  }
+
   const group = String(body.group || "");
+  const cutoff = Date.parse(settings.late_signup_cutoff || "");
   const apps = await listApplications();
   const statuses = await getStatuses();
   const recipients = apps.filter((a) => {
     if (!a.email) return false;
     const st = (statuses[a.id] && statuses[a.id].status) || "pending";
+    if (group === "late") return !isNaN(cutoff) && Date.parse(a.created_at || "") >= cutoff;
     if (group === "all") return true;
     if (group === "optin") return (a.updates_optin || "").toLowerCase() === "yes";
     return st === group;
   });
+  if (group === "late" && isNaN(cutoff)) return json(422, { error: "Set the sign-up cutoff date & time first." });
   if (!recipients.length) return json(200, { ok: true, sent: 0, note: "No matching recipients." });
 
-  let sent = 0;
-  for (let i = 0; i < recipients.length; i += 100) {
-    const chunk = recipients.slice(i, i + 100).map((a) => ({
-      from, to: [a.email], subject,
-      html: renderFor(key, url, rawBody, { first_name: a.first_name || "there", ...evars }),
-    }));
-    const res = await fetch("https://api.resend.com/emails/batch", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (compatible; AscensionSite/1.0)" },
-      body: JSON.stringify(chunk),
-    });
-    if (res.ok) sent += chunk.length;
-    else console.error("batch send failed", res.status, await res.text().catch(() => ""));
-  }
+  const messages = recipients.map((a) => ({
+    from, to: [a.email], subject,
+    html: renderFor(key, url, rawBody, { first_name: a.first_name || "there", ...evars }),
+  }));
+  const sent = await sendBatches(from, messages);
   return json(200, { ok: true, sent, total: recipients.length });
 };

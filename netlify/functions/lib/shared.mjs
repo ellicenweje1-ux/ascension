@@ -76,7 +76,41 @@ export const stores = {
   sequence: () => getStore("sequence"),
   flags: () => getStore("flags"),
   auth: () => getStore("auth"),
+  feedbackForm: () => getStore("feedback"),
+  feedbackResponses: () => getStore("feedback_responses"),
 };
+
+/* ---- feedback form definition + responses ---- */
+export const DEFAULT_FEEDBACK_FORM = {
+  intro: "Thank you for coming to A Night With Ascension. We'd love to hear your thoughts — it takes less than a minute.",
+  questions: [
+    { id: "q_overall", q: "Overall, how was your evening?", type: "single", options: ["Exceptional", "Great", "Good", "Okay", "Disappointing"] },
+    { id: "q_hear", q: "How did you first hear about Ascension?", type: "single", options: ["Instagram", "A friend", "Someone in the line-up", "Other"] },
+    { id: "q_enjoy", q: "What did you enjoy most? (choose any)", type: "multi", options: ["The music", "The atmosphere", "The venue", "The crowd", "The drinks"] },
+    { id: "q_again", q: "Would you come to another Ascension event?", type: "single", options: ["Definitely", "Probably", "Maybe", "No"] },
+    { id: "q_comments", q: "Anything else you'd like to share?", type: "text" },
+  ],
+};
+export async function getFeedbackForm() {
+  try {
+    const f = await stores.feedbackForm().get("form", { type: "json" });
+    if (f && Array.isArray(f.questions)) return f;
+  } catch {}
+  return DEFAULT_FEEDBACK_FORM;
+}
+export async function saveFeedbackForm(form) {
+  await stores.feedbackForm().setJSON("form", form);
+}
+export async function getFeedbackResponses() {
+  const store = stores.feedbackResponses();
+  const out = [];
+  try {
+    const { blobs } = await store.list();
+    const rows = await Promise.all(blobs.map((b) => store.get(b.key, { type: "json" }).catch(() => null)));
+    for (const r of rows) if (r) out.push(r);
+  } catch {}
+  return out;
+}
 
 export async function getSettings() {
   try { return (await stores.settings().get("event", { type: "json" })) || {}; }
@@ -237,6 +271,35 @@ Your place has been reserved. Please confirm your attendance below — once conf
     subject: "A note from Ascension",
     body: "Hi {first_name},\n\n[Your announcement here.]\n\nAscension\nMusic · Discovery · Culture",
   },
+  onday: {
+    name: "On-the-day sign-ups",
+    subject: "Tonight | A Night With Ascension",
+    body: `Hi {first_name},
+
+Thank you for signing up — we're delighted you'll be joining us for {event}.
+
+As you've registered close to the event, here's everything you need for tonight:
+
+Date: {date}
+Arrival: {arrival}
+Venue: {venue}
+
+Dress code — Contemporary Elegance. Elevated eveningwear; luxury streetwear welcomed when thoughtfully styled.
+
+Please arrive within the arrival window and bring this email with you. Admission is by guest-list verification at the door.
+
+We look forward to welcoming you.`,
+  },
+  feedback: {
+    name: "Feedback request",
+    tokened: true, // carries a personal link to the feedback form
+    subject: "Thank you for coming | Share your thoughts",
+    body: `Hi {first_name},
+
+Thank you for joining us at {event} — it was a pleasure to have you with us.
+
+We'd love to hear how you found the evening. It takes less than a minute, and your answers help us shape what comes next.`,
+  },
 };
 
 export async function loadTemplate(key) {
@@ -269,6 +332,14 @@ export function invitationEmailHtml(url, text, vars, confirmUrl, declineUrl) {
   return shell(url, inner);
 }
 
+// A prose email with a single call-to-action button (used for the feedback request).
+export function buttonEmail(url, text, vars, btnLabel, btnUrl) {
+  const inner = `<div style="border-top:1px solid rgba(244,241,236,0.14);padding-top:40px;">
+    ${proseParagraphs(fillVars(text, vars))}
+    <div style="text-align:center;padding:14px 0 6px;">${button(btnLabel, btnUrl)}</div>
+  </div>`;
+  return shell(url, inner);
+}
 export function eventVars(settings) {
   return {
     event: settings.event_name || "A Night With Ascension",
