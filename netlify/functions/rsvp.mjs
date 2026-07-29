@@ -9,7 +9,7 @@
  */
 import {
   json, esc, siteUrl, sendEmail, fromAddress, nextTicketRef,
-  getSettings, getStatuses, saveStatuses, shell,
+  getSettings, getStatus, saveStatus, shell,
 } from "./lib/shared.mjs";
 
 function arrivalText(s) {
@@ -106,10 +106,9 @@ export default async (req) => {
   const action = String(body.action || "view");
   if (!id || !t) return json(400, { error: "This link is missing information." });
 
-  const map = await getStatuses();
-  const entry = map[id];
+  const entry = await getStatus(id);
   if (!entry || !entry.token || entry.token !== t) {
-    return json(403, { error: "This link is invalid or has expired." });
+    return json(403, { error: "We couldn't open this invitation. If you've received more than one email from us, please open the most recent one — or reply to it and we'll help." });
   }
 
   const settings = await getSettings();
@@ -135,8 +134,7 @@ export default async (req) => {
     if (entry.status === "declined") return json(409, { error: "This place was declined. Please contact us if this is a mistake." });
     if (!entry.confirmed_at) entry.confirmed_at = new Date().toISOString();
     const inv = await issueInvitation(entry, settings, siteUrl(req));
-    map[id] = entry;
-    await saveStatuses(map);
+    await saveStatus(id, entry);
     return json(200, { status: entry.status, invitation: inv });
   }
 
@@ -145,8 +143,7 @@ export default async (req) => {
       entry.status = "declined";
       entry.declined_at = new Date().toISOString();
       entry.declined_by = "guest";
-      map[id] = entry;
-      await saveStatuses(map);
+      await saveStatus(id, entry);
     }
     return json(200, { status: entry.status });
   }

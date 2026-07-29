@@ -12,7 +12,7 @@
  */
 import {
   checkAdmin, json, siteUrl, sendEmail, fromAddress, randToken,
-  getSettings, getStatuses, saveStatuses, loadTemplate, invitationEmailHtml,
+  getSettings, getStatus, saveStatus, deleteStatus, loadTemplate, invitationEmailHtml,
   proseEmail, eventVars,
 } from "./lib/shared.mjs";
 
@@ -30,8 +30,7 @@ export default async (req) => {
     return json(422, { error: "Missing id or invalid action." });
   }
 
-  const map = await getStatuses();
-  const entry = map[id] || {};
+  const entry = (await getStatus(id)) || {};
   const url = siteUrl(req);
   const from = fromAddress();
   const settings = await getSettings();
@@ -39,18 +38,22 @@ export default async (req) => {
   let emailed = false;
   let note = "";
 
-  const sendInvite = async () => {
+  const sendInvite = async (force) => {
     if (!process.env.NOTIFY_FROM || !guest.email) {
       note = "Saved — invitation email skipped (email not configured or no guest email).";
       return;
     }
+    // Don't re-send the invitation on a repeated Accept — only Resend forces it.
+    // Prevents a guest getting several copies if Accept is clicked more than once.
+    if (!force && entry.invite_email_sent) { emailed = true; note = "Already invited — no duplicate email sent."; return; }
     if (!entry.token) entry.token = randToken();
     const link = `${url}/confirm.html?id=${encodeURIComponent(id)}&t=${entry.token}`;
     const tpl = await loadTemplate("invitation");
     const html = invitationEmailHtml(url, tpl.body, { first_name: guest.first_name || "there", ...evars }, link, link + "&d=1");
     const r = await sendEmail({ from, to: [guest.email], subject: tpl.subject, html });
     emailed = r.ok;
-    if (!r.ok) note = "Saved, but the invitation email failed to send.";
+    if (r.ok) entry.invite_email_sent = true;
+    else note = "Saved, but the invitation email failed to send.";
   };
 
   if (action === "accept" || action === "resend") {
@@ -58,7 +61,7 @@ export default async (req) => {
     entry.guest = { first_name: guest.first_name || "", surname: guest.surname || "", email: guest.email || "" };
     entry.invited_at = entry.invited_at || new Date().toISOString();
     if (action === "resend") entry.invited_at = new Date().toISOString();
-    await sendInvite();
+    await sendInvite(action === "resend");
   } else if (action === "waitlist") {
     entry.status = "waitlisted";
     entry.guest = { first_name: guest.first_name || "", surname: guest.surname || "", email: guest.email || "" };
@@ -77,12 +80,10 @@ export default async (req) => {
     entry.declined_at = new Date().toISOString();
     entry.declined_by = "admin";
   } else if (action === "undo") {
-    delete map[id];
-    await saveStatuses(map);
+    await deleteStatus(id);
     return json(200, { id, status: "pending", entry: null });
   }
 
-  map[id] = entry;
-  await saveStatuses(map);
+  await saveStatus(id, entry);
   return json(200, { id, status: entry.status, entry, emailed, note });
 };

@@ -82,12 +82,63 @@ export async function getSettings() {
   try { return (await stores.settings().get("event", { type: "json" })) || {}; }
   catch { return {}; }
 }
-export async function getStatuses() {
-  try { return (await stores.statuses().get("map", { type: "json" })) || {}; }
-  catch { return {}; }
+/*
+ * Guest statuses are stored ONE KEY PER GUEST (keyed by the guest id) so that
+ * accepting/confirming different guests never overwrite each other. A legacy
+ * combined object under the "map" key (from before this change) is still read
+ * as a non-destructive fallback and overlaid by any per-guest keys.
+ */
+const LEGACY_STATUS_KEY = "map";
+
+// Read one guest's status entry (per-guest key first, then legacy map).
+export async function getStatus(id) {
+  const store = stores.statuses();
+  try {
+    const e = await store.get(id, { type: "json" });
+    if (e) return e.__deleted ? null : e;
+  } catch {}
+  try {
+    const legacy = await store.get(LEGACY_STATUS_KEY, { type: "json" });
+    if (legacy && legacy[id]) return legacy[id];
+  } catch {}
+  return null;
 }
+
+// Write one guest's status entry (touches only that guest's key).
+export async function saveStatus(id, entry) {
+  await stores.statuses().setJSON(id, entry);
+}
+
+// Remove one guest (tombstone so a legacy map entry can't resurrect it).
+export async function deleteStatus(id) {
+  await stores.statuses().setJSON(id, { __deleted: true });
+}
+
+// Read the whole pipeline: legacy combined object overlaid by per-guest keys.
+export async function getStatuses() {
+  const store = stores.statuses();
+  const out = {};
+  try {
+    const legacy = await store.get(LEGACY_STATUS_KEY, { type: "json" });
+    if (legacy && typeof legacy === "object") Object.assign(out, legacy);
+  } catch {}
+  try {
+    const { blobs } = await store.list();
+    const keys = blobs.map((b) => b.key).filter((k) => k !== LEGACY_STATUS_KEY);
+    const entries = await Promise.all(keys.map((k) => store.get(k, { type: "json" }).catch(() => null)));
+    keys.forEach((k, i) => {
+      const e = entries[i];
+      if (!e) return;
+      if (e.__deleted) delete out[k];
+      else out[k] = e;
+    });
+  } catch {}
+  return out;
+}
+
+// Back-compat: bulk-write the whole map by splitting into per-guest keys.
 export async function saveStatuses(map) {
-  await stores.statuses().setJSON("map", map);
+  await Promise.all(Object.entries(map || {}).map(([id, entry]) => stores.statuses().setJSON(id, entry)));
 }
 
 /* ---- email ---- */
