@@ -178,12 +178,47 @@ td.door { white-space:nowrap; }
       <span>Guest list admin</span>
     </div>
     <div class="top-actions" id="top-actions" hidden>
+      <button class="btn btn-solid" id="add-btn">+ Add guest</button>
       <button class="btn" id="refresh-btn">Refresh</button>
       <button class="btn" id="csv-btn">Download CSV</button>
       <button class="btn" id="pw-btn">Password</button>
       <button class="btn" id="lock-btn">Lock</button>
     </div>
   </header>
+
+  <!-- add-a-guest modal -->
+  <div class="modal-back" id="add-modal" hidden>
+    <div class="modal">
+      <button class="modal-x" id="add-close" aria-label="Close">×</button>
+      <h2>Add a guest</h2>
+      <p class="pw-status" style="margin-bottom:4px;">Add someone to the guest list by hand — for guests who didn't apply online. Only a first name is required; everything else is optional.</p>
+      <div class="pw-section" style="border-top:0;padding-top:14px;margin-top:8px;">
+        <div class="grid">
+          <div><label>First name *</label><input id="add-first_name" autocomplete="off"></div>
+          <div><label>Surname</label><input id="add-surname" autocomplete="off"></div>
+          <div><label>Email (optional)</label><input id="add-email" type="email" autocomplete="off"></div>
+          <div><label>Phone</label><input id="add-phone" autocomplete="off"></div>
+          <div><label>Instagram (optional)</label><input id="add-instagram" placeholder="without @" autocomplete="off"></div>
+          <div><label>Occupation</label><input id="add-occupation" autocomplete="off"></div>
+          <div><label>How they heard</label><input id="add-heard_from" autocomplete="off"></div>
+          <div><label>Invited by</label><input id="add-invited_by" autocomplete="off"></div>
+          <div><label>Wants updates</label>
+            <select id="add-updates_optin"><option value="">No</option><option value="Yes">Yes</option></select></div>
+          <div><label>Add to the list as</label>
+            <select id="add-status">
+              <option value="confirmed">On the guest list (confirmed)</option>
+              <option value="issued">Ticketed (issue a ticket reference)</option>
+              <option value="invited">Invited</option>
+              <option value="pending">Received (pending review)</option>
+            </select></div>
+        </div>
+        <div class="actions" style="margin-top:16px;">
+          <button type="button" class="btn btn-solid" id="add-save">Add to guest list</button>
+          <span class="note" id="add-note">No email is sent — this is a manual entry.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- password management modal -->
   <div class="modal-back" id="pw-modal" hidden>
@@ -630,6 +665,32 @@ $("event-save").addEventListener("click", async () => {
   $("event-save").disabled = false;
 });
 
+/* ---------- add a guest by hand (top-bar modal) ---------- */
+const ADD_FIELDS = ["first_name","surname","email","phone","instagram","occupation","heard_from","invited_by","updates_optin"];
+function openAddModal() {
+  for (const f of ADD_FIELDS) { const el = $("add-" + f); if (el) el.value = ""; }
+  $("add-status").value = "confirmed";
+  $("add-note").textContent = "No email is sent — this is a manual entry.";
+  $("add-modal").hidden = false;
+  setTimeout(() => $("add-first_name").focus(), 30);
+}
+function closeAddModal() { $("add-modal").hidden = true; }
+$("add-btn").addEventListener("click", openAddModal);
+$("add-close").addEventListener("click", closeAddModal);
+$("add-modal").addEventListener("click", (e) => { if (e.target === $("add-modal")) closeAddModal(); });
+$("add-save").addEventListener("click", async () => {
+  const payload = { status: $("add-status").value };
+  for (const f of ADD_FIELDS) payload[f] = $("add-" + f).value.trim();
+  if (!payload.first_name) { $("add-note").textContent = "Please enter at least a first name."; return; }
+  $("add-save").disabled = true; $("add-note").textContent = "Adding…";
+  try {
+    await apiPost("/.netlify/functions/add-guest", payload);
+    closeAddModal();
+    await load(); hydrate(); // refresh the list + counts
+  } catch (err) { $("add-note").textContent = err.message; }
+  $("add-save").disabled = false;
+});
+
 /* ---------- security: password management (top-bar modal) ---------- */
 let PW_STATE = { enabled: true, can_enable: true };
 function paintPwStatus() {
@@ -934,7 +995,11 @@ function focusFromHash() {
 }
 window.addEventListener("hashchange", focusFromHash);
 
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("pw-modal").hidden) closePwModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!$("pw-modal").hidden) closePwModal();
+  if (!$("add-modal").hidden) closeAddModal();
+});
 
 async function boot() {
   let st = { enabled: true };
