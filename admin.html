@@ -491,12 +491,14 @@ function reviewCell(r) {
       `<div><button class="rev-btn" data-action="resend" data-id="${esc(r.id)}">Resend</button>${undo}</div>`;
   }
   if (s === "confirmed") {
-    return pill + (r.confirmed_at ? `<span class="rev-meta">${esc(fmtTime(r.confirmed_at))}</span>` : "") + `<div>${undo}</div>`;
+    return pill + (r.confirmed_at ? `<span class="rev-meta">${esc(fmtTime(r.confirmed_at))}</span>` : "") +
+      `<div><button class="rev-btn" data-action="resend" data-id="${esc(r.id)}">Send invite</button>` +
+      `<button class="rev-btn accept" data-action="send_ticket" data-id="${esc(r.id)}">Send ticket</button>${undo}</div>`;
   }
   if (s === "issued") {
     return pill + (r.ticket_ref ? `<span class="rev-ref">${esc(r.ticket_ref)}</span>` : "") +
       (r.confirmed_at ? `<span class="rev-meta">Confirmed ${esc(fmtTime(r.confirmed_at))}</span>` : "") +
-      `<div><button class="rev-btn" data-action="resend" data-id="${esc(r.id)}">Resend</button>${undo}</div>`;
+      `<div><button class="rev-btn" data-action="send_ticket" data-id="${esc(r.id)}">Resend ticket</button>${undo}</div>`;
   }
   if (s === "waitlisted") {
     return pill +
@@ -595,7 +597,8 @@ async function doAction(id, action) {
     accept: `Accept ${name} and send their invitation email?`,
     waitlist: `Move ${name} to the waitlist and send the waitlist email?`,
     decline: `Decline ${name}? (No email is sent.)`,
-    resend: `Resend the invitation email to ${name}?`,
+    resend: `Send ${name} the invitation email (to confirm their place)?`,
+    send_ticket: `Email ${name} their ticket now?${row.email ? "" : " (No email address on file — a ticket will be issued but not emailed.)"}`,
     undo: `Reset ${name} to pending? (No email is sent.)`,
   };
   if (prompts[action] && !confirm(prompts[action])) return;

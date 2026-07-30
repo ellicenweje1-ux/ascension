@@ -13,7 +13,7 @@
 import {
   checkAdmin, json, siteUrl, sendEmail, fromAddress, randToken,
   getSettings, getStatus, saveStatus, deleteStatus, loadTemplate, invitationEmailHtml,
-  proseEmail, eventVars,
+  proseEmail, eventVars, issueTicket,
 } from "./lib/shared.mjs";
 
 export default async (req) => {
@@ -26,7 +26,7 @@ export default async (req) => {
   const id = String(body.id || "");
   const action = String(body.action || "");
   const guest = body.guest || {};
-  if (!id || !["accept", "waitlist", "decline", "resend", "undo"].includes(action)) {
+  if (!id || !["accept", "waitlist", "decline", "resend", "undo", "send_ticket"].includes(action)) {
     return json(422, { error: "Missing id or invalid action." });
   }
 
@@ -62,6 +62,18 @@ export default async (req) => {
     entry.invited_at = entry.invited_at || new Date().toISOString();
     if (action === "resend") entry.invited_at = new Date().toISOString();
     await sendInvite(action === "resend");
+  } else if (action === "send_ticket") {
+    // Issue + email the guest their digital ticket directly (used for confirmed/
+    // manually-added guests, or to resend a ticketed guest's ticket). Always sends.
+    if (guest.first_name || guest.surname || guest.email) {
+      entry.guest = { first_name: guest.first_name || (entry.guest && entry.guest.first_name) || "", surname: guest.surname || (entry.guest && entry.guest.surname) || "", email: guest.email || (entry.guest && entry.guest.email) || "" };
+    }
+    if (!entry.token) entry.token = randToken();
+    const res = await issueTicket(entry, settings, url, true); // mints the ticket + emails it (if email configured)
+    emailed = res.emailed;
+    if (!emailed) note = (!process.env.NOTIFY_FROM || !(entry.guest && entry.guest.email))
+      ? "Ticket issued — email skipped (email not configured or guest has no email address)."
+      : "Saved, but the ticket email failed to send.";
   } else if (action === "waitlist") {
     entry.status = "waitlisted";
     entry.guest = { first_name: guest.first_name || "", surname: guest.surname || "", email: guest.email || "" };
